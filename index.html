@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ТВОЯ КАРЬЕРА ММА</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background: #000;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+}
+
+.screen {
+    display: none;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.screen.active {
+    display: block;
+}
+
+#startScreen {
+    background: #000;
+    align-items: center;
+    justify-content: center;
+}
+
+#startScreen.active {
+    display: flex;
+}
+
+.start-button {
+    width: 80%;
+    max-width: 350px;
+    padding: 22px;
+    background: #c40000;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.red {
+    color: #d00000;
+}
+
+.menu-title {
+    text-align: center;
+    font-size: 38px;
+    margin-top: 40px;
+    margin-bottom: 50px;
+    font-weight: bold;
+}
+
+.menu-button,
+.action-button {
+    width: 100%;
+    padding: 18px;
+    margin-bottom: 15px;
+    border: none;
+    border-radius: 10px;
+    background: #b80000;
+    color: white;
+    font-size: 19px;
+    font-weight: bold;
+}
+
+.menu-button:active,
+.action-button:active,
+.start-button:active {
+    transform: scale(.98);
+}
+
+.back-button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 20px;
+    border: 1px solid #555;
+    border-radius: 10px;
+    background: #111;
+    color: white;
+    font-size: 17px;
+}
+
+.delete-button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 10px;
+    background: #650000;
+    color: white;
+    font-size: 17px;
+}
+
+.form-box {
+    max-width: 500px;
+    margin: auto;
+}
+
+.form-title {
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+label {
+    display: block;
+    margin: 15px 0 7px;
+    color: #ccc;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 14px;
+    background: #111;
+    border: 1px solid #444;
+    color: white;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.stats-box {
+    background: #111;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #222;
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.bonus {
+    color: #e00000;
+    font-size: 14px;
+}
+
+.career-card {
+    position: relative;
+    width: 100%;
+    height: 150px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #333;
+    background-size: cover;
+    background-position: center;
+}
+
+.career-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to right,
+        rgba(0,0,0,.85),
+        rgba(0,0,0,.35)
+    );
+}
+
+.career-card button {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    color: white;
+    text-align: left;
+    padding: 25px;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.career-info {
+    background: #111;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 20px;
+}
+
+.career-info p {
+    margin: 7px 0;
+}
+
+.placeholder {
+    padding-top: 100px;
+    text-align: center;
+}
+
+.placeholder h1 {
+    margin-bottom: 15px;
+}
+
+.placeholder p {
+    color: #888;
+}
+
+#onlineCounter {
+    position: fixed;
+    top: 8px;
+    right: 8px;
+    z-index: 1000;
+    background: rgba(0,0,0,.8);
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #ddd;
+}
+</style>
+</head>
+
+<body>
+
+<div id="onlineCounter">🟢 Игроков в сети: 0</div>
+
+<!-- ================= START ================= -->
+
+<section id="startScreen" class="screen active">
+    <button class="start-button" onclick="startGame()">СТАРТ</button>
+</section>
+
+<!-- ================= MAIN MENU ================= -->
+
+<section id="mainMenu" class="screen">
+
+    <div class="menu-title">
+        ТВОЯ КАРЬЕРА<br>
+        <span class="red">ММА</span>
+    </div>
+
+    <button class="menu-button" onclick="openFighterCareer()">
+        🥊 КАРЬЕРА БОЙЦА
+    </button>
+
+    <button class="menu-button" onclick="showScreen('promotionLogin')">
+        🏆 ГЛАВА ПРОМОУШНА
+    </button>
+
+</section>
+
+<!-- ================= FIGHTER CREATION ================= -->
+
+<section id="fighterCreate" class="screen">
+
+    <div class="form-box">
+
+        <h1 class="form-title">СОЗДАНИЕ БОЙЦА</h1>
+
+        <label>Имя Фамилия</label>
+        <input id="fighterName" type="text" placeholder="Например: Артём Иванов">
+
+        <label>Возраст</label>
+        <select id="fighterAge">
+            <option value="22">22</option>
+            <option value="23">23</option>
+            <option value="24">24</option>
+            <option value="25">25</option>
+        </select>
+
+        <label>Страна</label>
+        <select id="fighterCountry">
+            <option>Россия</option>
+            <option>Бразилия</option>
+            <option>Испания</option>
+            <option>Грузия</option>
+            <option>Армения</option>
+            <option>США</option>
+            <option>Англия</option>
+            <option>Казахстан</option>
+            <option>Азербайджан</option>
+            <option>Украина</option>
+        </select>
+
+        <label>Стиль</label>
+        <select id="fighterStyle">
+            <option value="boxing">Бокс</option>
+            <option value="kickboxing">Кикбоксинг</option>
+            <option value="muaythai">Тайский бокс</option>
+            <option value="wrestling">Борьба вольная</option>
+            <option value="bjj">БЖЖ</option>
+        </select>
+
+        <label>Весовая категория</label>
+        <select id="fighterWeight">
+            <option>Лёгкий до 70,3 кг</option>
+            <option>Полусредний до 77,1 кг</option>
+            <option>Средний до 83,9 кг</option>
+            <option>Полутяжёлый до 90,0 кг</option>
+            <option>Тяжёлый до 120,2 кг</option>
+        </select>
+
+        <button class="action-button" onclick="createFighter()">
+            СОЗДАТЬ БОЙЦА
+        </button>
+
+        <button class="back-button" onclick="showScreen('mainMenu')">
+            Назад
+        </button>
+
+    </div>
+
+</section>
+
+<!-- ================= FIGHTER CAREER ================= -->
+
+<section id="fighterCareer" class="screen">
+
+    <div class="career-info">
+
+        <h1 id="careerFighterName">Боец</h1>
+
+        <p>🌍 <span id="careerCountry">—</span></p>
+        <p>🎂 Возраст: <span id="careerAge">—</span></p>
+        <p>⚖️ Вес: <span id="careerWeight">—</span></p>
+
+        <p>
+            🥊 Рекорд:
+            <span id="careerRecord">0–0</span>
+        </p>
+
+        <p>
+            ⭐ Популярность:
+            <span id="careerPopularity">0</span>
+        </p>
+
+    </div>
+
+    <div
+        class="career-card"
+        style="background-image:url('IMG_20260921_145836_315.jpg')">
+        <button onclick="showScreen('fighterFight')">
+            🥊 БОЙ
+        </button>
+    </div>
+
+    <div
+        class="career-card"
+        style="background-image:url('IMG_20260921_150403_327.jpg')">
+        <button onclick="showScreen('fighterTraining')">
+            🏋️ ТРЕНИРОВКИ
+        </button>
+    </div>
+
+    <div
+        class="career-card"
+        style="background-image:url('IMG_20260921_150637_562.jpg')">
+        <button onclick="showScreen('fighterMedia')">
+            📺 МЕДИА
+        </button>
+    </div>
+
+    <div
+        class="career-card"
+        style="background-image:url('IMG_763208df-b59f-400c-ace2-eea1f13ed794.jpg')">
+        <button onclick="showScreen('fighterProfile')">
+            👤 ПРОФИЛЬ БОЙЦА
+        </button>
+    </div>
+
+    <div
+        class="career-card"
+        style="background-image:url('IMG_58c3ec5a-1dc6-44b6-b734-0ce584d60dcc.jpg')">
+        <button onclick="showScreen('fighterOffice')">
+            🏢 ОФИС
+        </button>
+    </div>
+
+    <div
+        class="career-card"
+        style="background-image:url('pravilnyy_vrach_dietolog_chto_on_lechit_i_kak_ego_raspoznat.jpg')">
+        <button onclick="showScreen('fighterDietitian')">
+            🥗 ДИЕТОЛОГ
+        </button>
+    </div>
+
+    <button class="back-button" onclick="showScreen('mainMenu')">
+        Назад
+    </button>
+
+    <button class="delete-button" onclick="deleteFighter()">
+        Удалить бойца
+    </button>
+
+</section>
+
+<!-- ================= STATS ================= -->
+
+<section id="fighterStats" class="screen">
+
+    <h1>ХАРАКТЕРИСТИКИ</h1>
+
+    <div id="statsContainer" class="stats-box"></div>
+
+    <button class="back-button" onclick="showScreen('fighterCareer')">
+        Назад
+    </button>
+
+</section>
+
+<!-- ================= FIGHT ================= -->
+
+<section id="fighterFight" class="screen">
+    <div class="placeholder">
+        <h1>БОЙ</h1>
+        <p>Раздел в разработке</p>
+    </div>
+
+    <button class="back-button" onclick="showScreen('fighterCareer')">
+        Назад
+    </button>
+</section>
+
+<!-- ================= TRAINING ================= -->
+
+<section id="fighterTraining" class="screen">
+    <div class="placeholder">
+        <h1>ТРЕНИРОВКИ</h1>
+        <p>Раздел в разработке</p>
+    </div>
+
+    <button class="back-button" onclick="showScreen('fighterCareer')">
+        Назад
+    </button>
+</section>
+
+<!-- ================= MEDIA ================= -->
+
+<section id="fighterMedia" class="screen">
+    <div class="placeholder">
+        <h1>МЕДИА</h1>
+        <p>Раздел в разработке</p>
+    </div>
+
+    <button class="back-button" onclick="showScreen('fighterCareer')">
+        Назад
+    </button>
+</section>
+
+<!-- ================= PROFILE ================= -->
+
+<section id="fighterProfile" class="screen">
+    <div class="placeholder">
+        <h1>ПРОФИЛЬ БОЙЦА</h1>
+        <p>Раздел в разработке</p>
+    </div>
+
+    <button class="back-button" onclick="showScreen('fighterCareer')">
+        Назад
+    </button>
+</section>
+
+<!-- ================= OFFICE ================= -->
+
+<section id="fighterOffice" class="screen">
+    <div class="placeholder">
+        <h1>ОФИС</h1>
+        <p>Раздел в разработке</p>
+    </div>
+
+    <button class="back-button" onclick="showScreen('fighterCareer')">
+        Назад
+    </button>
+</section>
+
+<!-- ================= DIETITIAN ================= -->
+
+<section id="fighterDietitian" class="screen">
+    <div class="placeholder">
+        <h1>ДИЕТОЛОГ</h1>
+        <p>Раздел в разработке</p>
+    </div>
+
+    <button class="back-button" onclick="showScreen('fighterCareer')">
+        Назад
+    </button>
+</section>
+
+<!-- ================================================= -->
+<!-- PROMOTION LOGIN -->
+<!-- ================================================= -->
+
+<section id="promotionLogin" class="screen">
+
+    <div class="form-box">
+
+        <h1 class="form-title">
+            ГЛАВА ПРОМОУШНА
+        </h1>
+
+        <label>Секретный код</label>
+
+        <input
+            id="promotionCode"
+            type="password"
+            inputmode="numeric"
+            maxlength="4"
+            placeholder="Введите код"
+        >
+
+        <button class="action-button" onclick="enterPromotion()">
+            ВОЙТИ
+        </button>
+
+        <p
+            id="promotionLoginMessage"
+            style="text-align:center;margin-top:15px;color:#aaa;">
+        </p>
+
+        <button class="back-button" onclick="showScreen('mainMenu')">
+            Назад
+        </button>
+
+    </div>
+
+</section>
+
+<!-- ================================================= -->
+<!-- PROMOTION CAREER -->
+<!-- ================================================= -->
+
+<section id="promotionCareer" class="screen">
+
+    <div class="career-info">
+
+        <h1>ГЛАВА ПРОМОУШНА</h1>
+
+        <p>
+            🏆 Промоушн:
+            <strong>МОЙ ПРОМОУШН</strong>
+        </p>
+
+        <p>
+            👤 Статус:
+            <strong>Глава промоушна</strong>
+        </p>
+
+    </div>
+
+    <div
+        class="career-card"
+        style="background-image:url('IMG_20260921_145836_315.jpg')">
+        <button onclick="showScreen('promotionFights')">
+            🥊 БОИ
+        </button>
+    </div>
+
+    <div
+        class="career-card"
+        style="background-image:url('IMG_20260921_150637_562.jpg')">
+        <button onclick="showScreen('promotionMedia')">
+            📺 МЕДИА
+        </button>
+    </div>
+
+    <div
+        class="career-card"
+        style="background-image:url('IMG_58c3ec5a-1dc6-44b6-b734-0ce584d60dcc.jpg')">
+        <button onclick="showScreen('promotionOffice')">
+            🏢 ОФИС
+        </button>
+    </div>
+
+    <button class="back-button" onclick="showScreen('mainMenu')">
+        Назад
+    </button>
+
+    <button
+        class="delete-button"
+        style="background:#7d0000"
+        onclick="exitPromotion()">
+        🚪 Выйти с главы промоушна
+    </button>
+
+</section>
+
+<!-- ================= PROMOTION FIGHTS ================= -->
+
+<section id="promotionFights" class="screen">
+
+    <div class="placeholder">
+        <h1>БОИ</h1>
+        <p>Раздел в разработке</p>
+    </div>
+
+    <button class="back-button" onclick="showScreen('promotionCareer')">
+        Назад
+    </button>
+
+</section>
+
+<!-- ================= PROMOTION MEDIA ================= -->
+
+<section id="promotionMedia" class="screen">
+
+    <div class="placeholder">
+        <h1>МЕДИА</h1>
+        <p>Раздел в разработке</p>
+    </div>
+
+    <button class="back-button" onclick="showScreen('promotionCareer')">
+        Назад
+    </button>
+
+</section>
+
+<!-- ================= PROMOTION OFFICE ================= -->
+
+<section id="promotionOffice" class="screen">
+
+    <div class="placeholder">
+        <h1>ОФИС</h1>
+        <p>Раздел в разработке</p>
+    </div>
+
+    <button class="back-button" onclick="showScreen('promotionCareer')">
+        Назад
+    </button>
+
+</section>
+
+<script>
+
+/* ================================================= */
+/* SUPABASE */
+/* ================================================= */
+
+const SUPABASE_URL =
+    "https://bntpwhpclglwmlqfhdtn.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_N2IK5lKWgHlTJqyOqQt84g_6g1mGxKJ";
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+/* ================================================= */
+/* VARIABLES */
+/* ================================================= */
+
+let currentUser = null;
+let currentFighter = null;
+
+let onlineChannel = null;
+let promotionHeartbeat = null;
+
+
+/* ================================================= */
+/* MUSIC */
+/* ================================================= */
+
+const music =
+    new Audio(
+        "Ashnikko%20Worms%20%28Official%20Music%20Video%29.m4a"
+    );
+
+music.loop = true;
+music.volume = 0.35;
+
+
+/* ================================================= */
+/* SCREEN SYSTEM */
+/* ================================================= */
+
+function showScreen(id) {
+
+    document
+        .querySelectorAll(".screen")
+        .forEach(screen => {
+            screen.classList.remove("active");
+        });
+
+    const target =
+        document.getElementById(id);
+
+    if (target) {
+        target.classList.add("active");
+    }
+}
+
+
+/* ================================================= */
+/* AUTH */
+/* ================================================= */
+
+async function ensureAuth() {
+
+    let {
+        data: { session }
+    } = await supabaseClient.auth.getSession();
+
+    if (!session) {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.auth.signInAnonymously();
+
+        if (error) {
+            throw error;
+        }
+
+        session = data.session;
+    }
+
+    const {
+        data: { user },
+        error
+    } = await supabaseClient.auth.getUser();
+
+    if (error || !user) {
+        throw error || new Error("Пользователь не найден");
+    }
+
+    currentUser = user;
+
+    return user;
+}
+
+
+/* ================================================= */
+/* START GAME */
+/* ================================================= */
+
+async function startGame() {
+
+    try {
+
+        music.play().catch(() => {});
+
+        await loginAndLoadFighter();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Не удалось подключиться к серверу Supabase."
+        );
+    }
+}
+
+
+/* ================================================= */
+/* LOAD FIGHTER */
+/* ================================================= */
+
+async function loginAndLoadFighter() {
+
+    const user = await ensureAuth();
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("fighters")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (error) {
+
+        console.error(error);
+
+        alert(
+            "Ошибка загрузки бойца:\n" +
+            error.message
+        );
+
+        return;
+    }
+
+    if (data) {
+
+        currentFighter = data;
+
+        loadFighterToCareer();
+
+        showScreen("fighterCareer");
+
+    } else {
+
+        showScreen("mainMenu");
+    }
+
+    startOnlineCounter();
+}
+
+
+/* ================================================= */
+/* OPEN FIGHTER CAREER */
+/* ================================================= */
+
+function openFighterCareer() {
+
+    if (currentFighter) {
+
+        loadFighterToCareer();
+
+        showScreen("fighterCareer");
+
+    } else {
+
+        showScreen("fighterCreate");
+    }
+}
+
+
+/* ================================================= */
+/* CREATE FIGHTER */
+/* ================================================= */
+
+async function createFighter() {
+
+    try {
+
+        const user = await ensureAuth();
+
+        const name =
+            document
+                .getElementById("fighterName")
+                .value
+                .trim();
+
+        const age =
+            Number(
+                document
+                    .getElementById("fighterAge")
+                    .value
+            );
+
+        const country =
+            document
+                .getElementById("fighterCountry")
+                .value;
+
+        const style =
+            document
+                .getElementById("fighterStyle")
+                .value;
+
+        const weight =
+            document
+                .getElementById("fighterWeight")
+                .value;
+
+
+        if (!name) {
+
+            alert("Введите имя и фамилию.");
+
+            return;
+        }
+
+
+        /* Базовые характеристики */
+
+        const stats = {
+
+            hands: 2,
+            highKick: 2,
+            lowKick: 2,
+            elbows: 2,
+            knees: 2,
+            clinch: 2,
+            ground: 2,
+            takedown: 2,
+            submission: 2,
+            strength: 2,
+            speed: 2,
+            stamina: 2
+
+        };
+
+
+        /* Бонус стиля */
+
+        if (style === "boxing") {
+
+            stats.hands += 8;
+
+        }
+
+        if (style === "kickboxing") {
+
+            stats.hands += 2;
+            stats.highKick += 3;
+            stats.lowKick += 3;
+
+        }
+
+        if (style === "muaythai") {
+
+            stats.hands += 2;
+            stats.elbows += 3;
+            stats.knees += 3;
+            stats.clinch += 3;
+
+        }
+
+        if (style === "wrestling") {
+
+            stats.ground += 5;
+            stats.takedown += 4;
+
+        }
+
+        if (style === "bjj") {
+
+            stats.ground += 3;
+            stats.takedown += 3;
+            stats.submission += 3;
+
+        }
+
+
+        const {
+            data,
+            error
+        } = await supabaseClient
+            .from("fighters")
+            .insert({
+
+                id: user.id,
+
+                name: name,
+
+                age: age,
+
+                country: country,
+
+                style: style,
+
+                weight_class: weight,
+
+                stats: stats,
+
+                record_wins: 0,
+
+                record_losses: 0,
+
+                popularity: 0
+
+            })
+            .select()
+            .single();
+
+
+        if (error) {
+
+            console.error(error);
+
+            alert(
+                "Ошибка создания бойца:\n" +
+                error.message
+            );
+
+            return;
+        }
+
+
+        currentFighter = data;
+
+        loadFighterToCareer();
+
+        showScreen("fighterCareer");
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Ошибка:\n" +
+            error.message
+        );
+    }
+}
+
+
+/* ================================================= */
+/* LOAD FIGHTER UI */
+/* ================================================= */
+
+function loadFighterToCareer() {
+
+    if (!currentFighter) return;
+
+
+    document
+        .getElementById("careerFighterName")
+        .textContent =
+        currentFighter.name || "Боец";
+
+
+    document
+        .getElementById("careerCountry")
+        .textContent =
+        currentFighter.country || "—";
+
+
+    document
+        .getElementById("careerAge")
+        .textContent =
+        currentFighter.age || "—";
+
+
+    document
+        .getElementById("careerWeight")
+        .textContent =
+        currentFighter.weight_class || "—";
+
+
+    document
+        .getElementById("careerRecord")
+        .textContent =
+        `${currentFighter.record_wins ?? 0}–${currentFighter.record_losses ?? 0}`;
+
+
+    document
+        .getElementById("careerPopularity")
+        .textContent =
+        currentFighter.popularity ?? 0;
+}
+
+
+/* ================================================= */
+/* DELETE FIGHTER */
+/* ================================================= */
+
+async function deleteFighter() {
+
+    if (!currentUser) return;
+
+
+    const confirmed =
+        confirm(
+            "Удалить бойца?\n\n" +
+            "Это действие нельзя отменить."
+        );
+
+
+    if (!confirmed) return;
+
+
+    const {
+        error
+    } = await supabaseClient
+        .from("fighters")
+        .delete()
+        .eq("id", currentUser.id);
+
+
+    if (error) {
+
+        alert(
+            "Ошибка удаления:\n" +
+            error.message
+        );
+
+        return;
+    }
+
+
+    currentFighter = null;
+
+    showScreen("mainMenu");
+}
+
+
+/* ================================================= */
+/* STATS */
+/* ================================================= */
+
+function openStats() {
+
+    if (!currentFighter) return;
+
+    const stats =
+        currentFighter.stats || {};
+
+    const names = {
+
+        hands: "Удар",
+
+        highKick: "Удар ногой",
+
+        lowKick: "Удар ногой (лоу-кик)",
+
+        elbows: "Локти",
+
+        knees: "Колени",
+
+        clinch: "Клинч",
+
+        ground: "Партер",
+
+        takedown: "Борьба / тейкдаун",
+
+        submission: "Сабмишн",
+
+        strength: "Сила",
+
+        speed: "Скорость",
+
+        stamina: "Кардио"
+
+    };
+
+
+    const style =
+        currentFighter.style;
+
+
+    const bonuses = {
+
+        boxing: {
+            hands: 8
+        },
+
+        kickboxing: {
+            hands: 2,
+            highKick: 3,
+            lowKick: 3
+        },
+
+        muaythai: {
+            hands: 2,
+            elbows: 3,
+            knees: 3,
+            clinch: 3
+        },
+
+        wrestling: {
+            ground: 5,
+            takedown: 4
+        },
+
+        bjj: {
+            ground: 3,
+            takedown: 3,
+            submission: 3
+        }
+
+    };
+
+
+    const styleBonus =
+        bonuses[style] || {};
+
+
+    let html = "";
+
+
+    Object.keys(names).forEach(key => {
+
+        const value =
+            stats[key] ?? 2;
+
+        const bonus =
+            styleBonus[key] || 0;
+
+
+        html += `
+            <div class="stat-row">
+                <span>${names[key]}</span>
+                <span>
+                    ${value}
+                    ${
+                        bonus
+                        ? `<span class="bonus">(+${bonus})</span>`
+                        : ""
+                    }
+                </span>
+            </div>
+        `;
+    });
+
+
+    document
+        .getElementById("statsContainer")
+        .innerHTML = html;
+
+
+    showScreen("fighterStats");
+}
+
+
+/* ================================================= */
+/* ONLINE COUNTER */
+/* ================================================= */
+
+async function startOnlineCounter() {
+
+    try {
+
+        await ensureAuth();
+
+        if (onlineChannel) {
+
+            await supabaseClient
+                .removeChannel(onlineChannel);
+        }
+
+
+        onlineChannel =
+            supabaseClient.channel(
+                "mma-online",
+                {
+                    config: {
+                        presence: {
+                            key: currentUser.id
+                        }
+                    }
+                }
+            );
+
+
+        onlineChannel
+            .on(
+                "presence",
+                {
+                    event: "sync"
+                },
+                () => {
+
+                    const state =
+                        onlineChannel.presenceState();
+
+                    let count = 0;
+
+                    Object
+                        .keys(state)
+                        .forEach(key => {
+
+                            count +=
+                                state[key].length;
+
+                        });
+
+
+                    document
+                        .getElementById("onlineCounter")
+                        .textContent =
+                        `🟢 Игроков в сети: ${count}`;
+                }
+            )
+            .subscribe(async status => {
+
+                if (status === "SUBSCRIBED") {
+
+                    await onlineChannel.track({
+                        online_at:
+                            new Date().toISOString()
+                    });
+
+                }
+
+            });
+
+    } catch (error) {
+
+        console.error(
+            "Online counter:",
+            error
+        );
+    }
+}
+
+
+/* ================================================= */
+/* ENTER PROMOTION */
+/* ================================================= */
+
+async function enterPromotion() {
+
+    const input =
+        document
+            .getElementById("promotionCode");
+
+    const message =
+        document
+            .getElementById(
+                "promotionLoginMessage"
+            );
+
+
+    const code =
+        input.value.trim();
+
+
+    message.textContent = "";
+
+
+    if (!code) {
+
+        message.textContent =
+            "Введите секретный код.";
+
+        message.style.color =
+            "#ff5555";
+
+        return;
+    }
+
+
+    try {
+
+        await ensureAuth();
+
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .rpc(
+                    "claim_promotion",
+                    {
+                        p_code: code
+                    }
+                );
+
+
+        if (error) {
+
+            console.error(error);
+
+            message.textContent =
+                "Ошибка сервера.";
+
+            message.style.color =
+                "#ff5555";
+
+            return;
+        }
+
+
+        if (!data || !data.ok) {
+
+
+            if (
+                data?.reason ===
+                "wrong_code"
+            ) {
+
+                message.textContent =
+                    "Неверный секретный код.";
+
+            } else if (
+                data?.reason ===
+                "busy"
+            ) {
+
+                message.textContent =
+                    "Сейчас глава промоушна уже занят другим игроком.";
+
+            } else if (
+                data?.reason ===
+                "not_authenticated"
+            ) {
+
+                message.textContent =
+                    "Не удалось определить игрока.";
+
+            } else {
+
+                message.textContent =
+                    "Войти не удалось.";
+            }
+
+
+            message.style.color =
+                "#ff4444";
+
+            return;
+        }
+
+
+        input.value = "";
+
+        message.textContent = "";
+
+        showScreen("promotionCareer");
+
+        startPromotionHeartbeat();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        message.textContent =
+            "Ошибка подключения.";
+
+        message.style.color =
+            "#ff4444";
+    }
+}
+
+
+/* ================================================= */
+/* PROMOTION HEARTBEAT */
+/* ================================================= */
+
+function startPromotionHeartbeat() {
+
+    stopPromotionHeartbeat();
+
+
+    promotionHeartbeat =
+        setInterval(
+            async () => {
+
+                try {
+
+                    const {
+                        data,
+                        error
+                    } =
+                        await supabaseClient
+                            .rpc(
+                                "promotion_heartbeat"
+                            );
+
+
+                    if (
+                        error ||
+                        data !== true
+                    ) {
+
+                        stopPromotionHeartbeat();
+
+                        alert(
+                            "Ваша сессия главы промоушна завершена."
+                        );
+
+                        showScreen("mainMenu");
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        "Heartbeat:",
+                        error
+                    );
+                }
+
+            },
+            30000
+        );
+}
+
+
+/* ================================================= */
+/* STOP HEARTBEAT */
+/* ================================================= */
+
+function stopPromotionHeartbeat() {
+
+    if (promotionHeartbeat) {
+
+        clearInterval(
+            promotionHeartbeat
+        );
+
+        promotionHeartbeat = null;
+    }
+}
+
+
+/* ================================================= */
+/* EXIT PROMOTION */
+/* ================================================= */
+
+async function exitPromotion() {
+
+    const confirmed =
+        confirm(
+            "Выйти с главы промоушна?"
+        );
+
+
+    if (!confirmed) return;
+
+
+    try {
+
+        stopPromotionHeartbeat();
+
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .rpc(
+                    "release_promotion"
+                );
+
+
+        if (error) {
+
+            console.error(error);
+
+            alert(
+                "Не удалось выйти:\n" +
+                error.message
+            );
+
+            startPromotionHeartbeat();
+
+            return;
+        }
+
+
+        if (!data) {
+
+            alert(
+                "Сессия главы промоушна уже завершена."
+            );
+        }
+
+
+        showScreen("mainMenu");
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Ошибка выхода:\n" +
+            error.message
+        );
+
+        startPromotionHeartbeat();
+    }
+}
+
+
+/* ================================================= */
+/* PAGE CLOSE */
+/* ================================================= */
+
+window.addEventListener(
+    "beforeunload",
+    () => {
+
+        stopPromotionHeartbeat();
+
+    }
+);
+
+</script>
+
+</body>
+  </html>

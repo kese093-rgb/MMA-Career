@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Твоя карьера ММА</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="comments.js"></script>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #050505; color: white; font-family: Arial, sans-serif; }
+.screen { display: none; min-height: 100vh; padding: 20px; }
+.screen.active { display: block; }
+#startScreen { position: fixed; inset: 0; padding: 0; background: #000; display: none; align-items: center; justify-content: center; z-index: 9999; }
+#startScreen.active { display: flex; }
+.start-bg { position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,.65),rgba(0,0,0,.85)), url("IMG_20260921_154051_069.jpg") center/cover no-repeat; }
+.start-content { position: relative; z-index: 2; text-align: center; }
+.start-title { font-size: 42px; font-weight: 900; line-height: 1; margin-bottom: 40px; }
+.start-title span { color: red; }
+.start-button { width: 220px; padding: 18px; border: none; background: red; color: white; font-size: 22px; font-weight: 900; border-radius: 12px; }
+#mainMenu { min-height: 100vh; background: linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.9)), url("IMG_20260921_154051_069.jpg") center/cover no-repeat; text-align: center; }
+.main-title { padding-top: 70px; font-size: 40px; font-weight: 900; line-height: 1; }
+.main-title span { color: red; }
+.menu-buttons { margin-top: 70px; }
+.menu-button { display: block; width: 90%; max-width: 400px; margin: 15px auto; padding: 18px; background: red; border: none; border-radius: 10px; color: white; font-size: 19px; font-weight: 900; }
+h1 { text-align: center; margin-top: 15px; }
+.form-box { max-width: 500px; margin: 25px auto; }
+label { display: block; margin-top: 15px; margin-bottom: 7px; font-weight: bold; }
+input, select { width: 100%; padding: 14px; background: #151515; color: white; border: 1px solid #333; border-radius: 8px; font-size: 16px; }
+.red-button { width: 100%; margin-top: 20px; padding: 16px; background: red; color: white; border: none; border-radius: 9px; font-size: 17px; font-weight: 900; }
+.back-button { width: 100%; max-width: 500px; display: block; margin: 15px auto; padding: 14px; background: #222; color: white; border: 1px solid #444; border-radius: 8px; font-size: 16px; }
+.danger-button { background: #700000; }
+.stats-box { margin-top: 20px; background: #101010; border: 1px solid #292929; border-radius: 12px; padding: 15px; }
+.stats-title { text-align: center; color: red; font-size: 20px; font-weight: 900; margin-bottom: 12px; }
+.stat-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 4px; border-bottom: 1px solid #222; }
+.stat-row:last-child { border-bottom: none; }
+.bonus { color: red; font-weight: 900; margin-left: 5px; }
+.training-points { background: #111; border: 1px solid #292929; border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 20px; }
+.training-points-number { font-size: 32px; font-weight: 900; color: red; margin-top: 5px; }
+.training-energy { color: #bbb; margin-top: 8px; }
+.training-stat { background: #111; border: 1px solid #292929; border-radius: 10px; padding: 12px; margin-top: 10px; }
+.training-stat-line { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.training-stat-name { font-weight: bold; }
+.training-stat-value { font-weight: 900; min-width: 30px; text-align: right; }
+.upgrade-button { background: red; border: none; color: white; border-radius: 7px; padding: 9px 13px; font-weight: 900; }
+.upgrade-button:disabled { background: #333; color: #777; }
+.training-info { text-align: center; color: #aaa; margin: 15px 0; line-height: 1.5; }
+.online-counter { text-align: center; margin-bottom: 15px; color: #bbb; }
+.profile-card { background: #111; border: 1px solid #292929; border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+.profile-name { text-align: center; font-size: 25px; font-weight: 900; margin-bottom: 12px; }
+.profile-info { text-align: center; color: #bbb; line-height: 1.6; margin-top: 6px; }
+.energy-good { color: #55ff55; font-weight: 900; }
+.energy-low { color: #ff4444; font-weight: 900; }
+.career-grid { display: grid; grid-template-columns: 1fr; gap: 14px; max-width: 500px; margin: auto; }
+.career-card { position: relative; height: 150px; overflow: hidden; border-radius: 12px; border: 1px solid #333; background: #111; cursor: pointer; }
+.career-card img { width: 100%; height: 100%; object-fit: cover; }
+.career-card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent,rgba(0,0,0,.9)); }
+.career-card-title { position: absolute; bottom: 14px; left: 15px; z-index: 2; font-size: 22px; font-weight: 900; }
+.weight-status { text-align: center; background: #111; border-radius: 12px; padding: 18px; margin-bottom: 20px; border: 1px solid #292929; }
+.weight-number { font-size: 30px; font-weight: 900; }
+.energy-number { margin-top: 8px; font-size: 20px; }
+.cut-button { width: 100%; padding: 16px; margin-top: 12px; background: #c00000; border: none; border-radius: 9px; color: white; font-weight: 900; font-size: 16px; }
+.cut-button:disabled { background: #333; color: #777; }
+.cooldown { text-align: center; color: #ff4444; margin-top: 15px; font-weight: bold; }
+.roster-tabs { display: flex; gap: 8px; overflow-x: auto; padding: 5px 0 12px; margin-bottom: 10px; scrollbar-width: none; }
+.roster-tabs::-webkit-scrollbar { display: none; }
+.roster-tab { flex: 0 0 auto; background: #171717; color: white; border: 1px solid #333; border-radius: 8px; padding: 11px 14px; font-size: 14px; font-weight: 900; white-space: nowrap; }
+.roster-tab.active { background: red; border-color: red; }
+.roster-card { max-width: 500px; margin: 15px auto; background: #101010; border: 1px solid #292929; border-radius: 12px; overflow: hidden; }
+.roster-section-title { text-align: center; color: red; font-size: 20px; font-weight: 900; padding: 15px; border-bottom: 1px solid #292929; }
+.roster-champion { padding: 18px; text-align: center; border-bottom: 1px solid #292929; }
+.roster-champion-label { color: #aaa; font-size: 13px; font-weight: 900; margin-bottom: 8px; }
+.roster-champion-name { font-size: 20px; font-weight: 900; color: gold; }
+.roster-list { padding: 5px 0; }
+.roster-row { display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 8px; padding: 13px 14px; border-bottom: 1px solid #222; }
+.roster-row:last-child { border-bottom: none; }
+.roster-row-editable { grid-template-columns: 42px 1fr auto auto; }
+.roster-position { color: #888; font-weight: 900; }
+.roster-fighter-name { font-weight: 900; }
+.roster-record { color: #aaa; font-weight: bold; }
+.roster-empty { color: #555; }
+.roster-controls { display: flex; gap: 6px; }
+.roster-arrow { background: red; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-weight: 900; font-size: 14px; cursor: pointer; }
+.roster-arrow:disabled { background: #333; color: #666; cursor: default; }
+.roster-loading { text-align: center; color: #aaa; padding: 25px; }
+.placeholder { text-align: center; margin-top: 120px; }
+.placeholder h1 { color: red; }
+.promotion-profile { background: #111; border: 1px solid #292929; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; }
+.promotion-profile-name { font-size: 25px; font-weight: 900; }
+.error { color: red; text-align: center; margin-top: 15px; font-weight: bold; }
+.success { color: #55ff55; text-align: center; margin-top: 15px; font-weight: bold; }
+.card-header { max-width: 500px; margin: 0 auto 20px; }
+.card-header input { text-align: center; font-weight: 900; }
+.card-slot { max-width: 500px; margin: 14px auto; background: #0d0d0d; border: 1px solid #292929; border-radius: 12px; padding: 14px; }
+.card-slot-label { text-align: center; font-size: 13px; font-weight: 900; letter-spacing: 1px; color: #bbb; margin-bottom: 12px; text-transform: uppercase; }
+.card-slot-label.main { color: gold; }
+.card-slot-label.co { color: #d4d4d4; }
+.card-slot-label.bout { color: #aaa; }
+.card-slot-label.prelim { color: #666; }
+.card-slot-title-toggle { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 10px; color: #ccc; font-size: 13px; }
+.card-vs-row { display: grid; grid-template-columns: 1fr 40px 1fr; align-items: center; gap: 8px; }
+.card-vs-text { text-align: center; font-weight: 900; color: #555; font-size: 14px; }
+.card-side { padding: 14px 10px; border-radius: 8px; text-align: center; font-weight: 900; font-size: 14px; min-height: 54px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #161616; border: 2px solid #333; color: #666; }
+.card-side.left { border-color: #1e4d99; background: #0d1b2e; color: #9bbcf0; }
+.card-side.right { border-color: #992222; background: #2e0d0d; color: #f09b9b; }
+.card-side.filled { color: white; }
+.card-side.filled.left { background: #143060; border-color: #2a6cc9; }
+.card-side.filled.right { background: #5c1414; border-color: #cc2a2a; }
+.card-roster-fighter { padding: 13px 14px; border-bottom: 1px solid #222; cursor: pointer; font-weight: 900; display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 8px; }
+.card-roster-fighter.selected { background: #2a0808; color: red; }
+.champion-row { background: #2a1f00 !important; }
+.champion-row .roster-fighter-name { color: gold; }
+.result-fight { max-width: 500px; margin: 15px auto; background: #0d0d0d; border: 1px solid #292929; border-radius: 12px; padding: 16px; }
+.result-fight-title { text-align: center; font-weight: 900; font-size: 15px; color: gold; margin-bottom: 10px; }
+.result-comment { padding: 6px 0; color: #ddd; font-size: 15px; border-bottom: 1px dashed #1a1a1a; }
+.result-comment:last-child { border-bottom: none; }
+.result-winner { text-align: center; font-weight: 900; font-size: 18px; color: #55ff55; margin-top: 14px; padding-top: 12px; border-top: 1px solid #292929; }
+.result-round-score { text-align: center; color: #bbb; font-size: 14px; margin-top: 6px; font-weight: 900; }
+.skip-button { width: 100%; max-width: 500px; display: block; margin: 20px auto 10px; padding: 14px; background: #444; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 900; }
+@media (min-width: 700px) { .career-grid { grid-template-columns: 1fr 1fr; max-width: 800px; } }
+</style>
+</head>
+<body>
+
+<section id="startScreen" class="screen active">
+    <div class="start-bg"></div>
+    <div class="start-content">
+        <div class="start-title">ТВОЯ КАРЬЕРА<br><span>ММА</span></div>
+        <button class="start-button" onclick="startGame()">СТАРТ</button>
+    </div>
+</section>
+
+<section id="mainMenu" class="screen">
+    <div class="main-title">ТВОЯ КАРЬЕРА<br><span>ММА</span></div>
+    <div id="onlineCounter" class="online-counter">Игроков в сети: 0</div>
+    <div class="menu-buttons">
+        <button class="menu-button" onclick="openFighterCareer()">Карьера Бойца</button>
+        <button class="menu-button" onclick="openPromotion()">Глава Промоушна</button>
+    </div>
+</section>
+
+<section id="fighterCreate" class="screen">
+    <h1>СОЗДАНИЕ БОЙЦА</h1>
+    <div class="form-box">
+        <label>Имя и фамилия</label>
+        <input id="fighterName" type="text" placeholder="Например: Артур Иванов">
+        <label>Страна</label>
+        <select id="fighterCountry">
+            <option value="Россия">Россия</option>
+            <option value="Бразилия">Бразилия</option>
+            <option value="Испания">Испания</option>
+            <option value="Грузия">Грузия</option>
+            <option value="Армения">Армения</option>
+            <option value="США">США</option>
+            <option value="Англия">Англия</option>
+            <option value="Казахстан">Казахстан</option>
+            <option value="Азербайджан">Азербайджан</option>
+            <option value="Украина">Украина</option>
+        </select>
+        <label>Стиль</label>
+        <select id="fighterStyle" onchange="updateStats()">
+            <option value="boxing">Бокс</option>
+            <option value="kickboxing">Кикбоксинг</option>
+            <option value="muaythai">Тайский Бокс</option>
+            <option value="wrestling">Вольная борьба</option>
+            <option value="bjj">БЖЖ</option>
+        </select>
+        <label>Весовая категория</label>
+        <select id="fighterWeightClass">
+            <option value="lightweight">Лёгкий вес — до 70.3 кг</option>
+            <option value="welterweight">Полусредний вес — до 77.1 кг</option>
+            <option value="middleweight">Средний вес — до 83.9 кг</option>
+            <option value="lightheavyweight">Полутяжёлый вес — до 90 кг</option>
+            <option value="heavyweight">Тяжёлый вес — до 130 кг</option>
+        </select>
+        <div class="stats-box">
+            <div class="stats-title">ХАРАКТЕРИСТИКИ</div>
+            <div id="createStats"></div>
+        </div>
+        <button class="red-button" onclick="createFighter()">СОЗДАТЬ БОЙЦА</button>
+        <button class="back-button" onclick="showScreen('mainMenu')">Назад</button>
+        <div id="fighterCreateMessage"></div>
+    </div>
+</section>
+
+<section id="fighterCareer" class="screen"><div id="fighterCareerContent"></div></section>
+
+<section id="fighterFight" class="screen">
+    <div class="placeholder"><h1>БОЙ</h1><p>Раздел в разработке</p></div>
+    <button class="back-button" onclick="showScreen('fighterCareer')">Назад</button>
+</section>
+
+<section id="fighterTraining" class="screen">
+    <h1>ТРЕНИРОВКИ</h1>
+    <div class="form-box">
+        <div class="training-points">
+            <div>ПОИНТЫ ДЛЯ ПРОКАЧКИ</div>
+            <div class="training-points-number" id="trainingPoints">0</div>
+            <div class="training-energy">Энергия: <span id="trainingEnergy">100</span></div>
+        </div>
+        <div class="training-info">1 поинт = +1 к характеристике<br>Каждая прокачка стоит 5 энергии</div>
+        <div id="trainingStats"></div>
+        <button class="back-button" onclick="showScreen('fighterCareer')">Назад</button>
+    </div>
+</section>
+
+<section id="fighterMedia" class="screen">
+    <div class="placeholder"><h1>МЕДИА</h1><p>Раздел в разработке</p></div>
+    <button class="back-button" onclick="showScreen('fighterCareer')">Назад</button>
+</section>
+
+<section id="fighterProfile" class="screen">
+    <div class="placeholder"><h1>ПРОФИЛЬ БОЙЦА</h1><p>Раздел в разработке</p></div>
+    <button class="back-button" onclick="showScreen('fighterCareer')">Назад</button>
+</section>
+
+<section id="fighterRoster" class="screen">
+    <h1>РОСТЕР</h1>
+    <div id="rosterTabs" class="roster-tabs"></div>
+    <div id="rosterContent"><div class="roster-loading">Загрузка ростера...</div></div>
+    <button class="back-button" id="rosterBackButton" onclick="showScreen('fighterCareer')">Назад</button>
+</section>
+
+<section id="fighterDietitian" class="screen">
+    <h1>ДИЕТОЛОГ</h1>
+    <div class="form-box">
+        <div class="weight-status">
+            <div>Текущий вес</div>
+            <div class="weight-number" id="dietWeight">70 кг</div>
+            <div class="energy-number">Энергия: <span id="dietEnergy">100</span></div>
+        </div>
+        <button class="cut-button" id="extremeCutButton" onclick="cutWeight(2,30)">ЭКСТРЕМАЛЬНАЯ ВЕСОГОНКА<br>−2 кг / −30 энергии</button>
+        <button class="cut-button" id="normalCutButton" onclick="cutWeight(1,15)">ВЕСОГОНКА<br>−1 кг / −15 энергии</button>
+        <button class="cut-button" id="passiveCutButton" onclick="cutWeight(0.5,7)">ПАССИВНАЯ ВЕСОГОНКА<br>−0.5 кг / −7 энергии</button>
+        <div id="cutCooldown" class="cooldown"></div>
+        <button class="back-button" onclick="showScreen('fighterCareer')">Назад</button>
+    </div>
+</section>
+
+<section id="fighterStats" class="screen">
+    <h1>ХАРАКТЕРИСТИКИ</h1>
+    <div class="form-box"><div class="stats-box"><div id="careerStats"></div></div></div>
+    <button class="back-button" onclick="showScreen('fighterCareer')">Назад</button>
+</section>
+
+<section id="promotionLogin" class="screen">
+    <h1>ГЛАВА ПРОМОУШНА</h1>
+    <div class="form-box">
+        <label>Имя и фамилия</label>
+        <input id="promotionHeadName" type="text" placeholder="Например: Артур Иванов">
+        <label>Секретный код</label>
+        <input id="promotionCode" type="password" inputmode="numeric" placeholder="Введите код">
+        <button class="red-button" onclick="claimPromotion()">СОЗДАТЬ ПРОФИЛЬ</button>
+        <button class="back-button" onclick="showScreen('mainMenu')">Назад</button>
+        <div id="promotionMessage"></div>
+    </div>
+</section>
+
+<section id="promotionCareer" class="screen">
+    <h1>ГЛАВА ПРОМОУШНА</h1>
+    <div class="form-box">
+        <div class="promotion-profile">
+            <div class="promotion-profile-name" id="promotionHeadNameDisplay"></div>
+            <div class="profile-info">Глава промоушна</div>
+        </div>
+        <div class="career-grid">
+            <div class="career-card" onclick="openCardBuilder()">
+                <img src="IMG_20260921_145836_315.jpg">
+                <div class="career-card-title">БОЙ</div>
+            </div>
+            <div class="career-card" onclick="showScreen('promotionMedia')">
+                <img src="IMG_20260921_150637_562.jpg">
+                <div class="career-card-title">МЕДИА</div>
+            </div>
+            <div class="career-card" onclick="openRoster('promotionCareer')">
+                <img src="IMG_58c3ec5a-1dc6-44b6-b734-0ce584d60dcc.jpg">
+                <div class="career-card-title">ОФИС</div>
+            </div>
+        </div>
+        <button class="back-button" onclick="releasePromotion()">Выйти с главы промоушна</button>
+        <button class="back-button" onclick="showScreen('mainMenu')">В главное меню</button>
+    </div>
+</section>
+
+<section id="promotionMedia" class="screen">
+    <div class="placeholder"><h1>МЕДИА</h1><p>Раздел в разработке</p></div>
+    <button class="back-button" onclick="showScreen('promotionCareer')">Назад</button>
+</section>
+
+<section id="cardBuilder" class="screen">
+    <h1>СОЗДАНИЕ КАРДА</h1>
+    <div class="card-header">
+        <label>Название карда</label>
+        <input id="cardName" type="text" placeholder="Например: UFC 300">
+        <label>Дата и время (UTC)</label>
+        <input id="cardDate" type="datetime-local">
+    </div>
+    <div id="cardSlots"></div>
+    <h1 style="margin-top:30px;">РОСТЕР</h1>
+    <div id="cardRosterTabs" class="roster-tabs"></div>
+    <div id="cardRosterContent"></div>
+    <button class="red-button" onclick="saveCard()">СОХРАНИТЬ КАРД</button>
+    <button class="back-button" onclick="showScreen('promotionCareer')">Назад</button>
+    <div id="cardMessage"></div>
+</section>
+
+<section id="cardResults" class="screen">
+    <h1>РЕЗУЛЬТАТЫ БОЯ</h1>
+    <div id="cardResultsContent"></div>
+</section>
+
+<script>
+const SUPABASE_URL = "https://bntpwhpclglwmlqfhdtn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_N2IK5lKWgHlTJqyOqQt84g_6g1mGxKJ";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+let currentFighter = null;
+let onlineChannel = null;
+let promotionHeartbeatTimer = null;
+let rosterBackScreen = "fighterCareer";
+let currentRosterDivision = "lightweight";
+let cardSlotsState = [];
+let cardFighterData = {};
+let selectedFighterId = null;
+let cardRosterDivision = "lightweight";
+let skipPlayback = false;
+let playbackTimers = [];
+
+const cardSlotLabels = [
+    { text: "ГЛАВНЫЙ БОЙ ВЕЧЕРА", cls: "main" },
+    { text: "СО-ГЛАВНЫЙ БОЙ ВЕЧЕРА", cls: "co" },
+    { text: "БОЙ", cls: "bout" },
+    { text: "ПРЕЛИМЫ", cls: "prelim" },
+    { text: "ПРЕЛИМЫ", cls: "prelim" }
+];
+
+const rosterDivisions = {
+    lightweight: { name: "Лёгкий вес", startWeight: 70.0 },
+    welterweight: { name: "Полусредний вес", startWeight: 77.0 },
+    middleweight: { name: "Средний вес", startWeight: 83.0 },
+    lightheavyweight: { name: "Полутяжёлый вес", startWeight: 90.0 },
+    heavyweight: { name: "Тяжёлый вес", startWeight: 130.0 }
+};
+
+function showScreen(id) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    const target = document.getElementById(id);
+    if (target) target.classList.add("active");
+    if (id === "fighterDietitian") updateDietitian();
+    if (id === "fighterStats") updateCareerStats();
+    if (id === "fighterTraining") updateTrainingScreen();
+}
+
+async function startGame() {
+    document.getElementById("startScreen").classList.remove("active");
+    const music = new Audio("Ashnikko%20Worms%20(Official%20Music%20Video).m4a");
+    music.loop = true; music.volume = 0.5;
+    music.play().catch(() => {});
+    await loginAndLoadFighter();
+}
+
+async function ensureAuth() {
+    let { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
+        const { data, error } = await supabaseClient.auth.signInAnonymously();
+        if (error) { console.error(error); return false; }
+        session = data.session;
+    }
+    if (!session) return false;
+    currentUser = session.user;
+    return true;
+}
+
+async function loginAndLoadFighter() {
+    const authOk = await ensureAuth();
+    if (!authOk) { showScreen("mainMenu"); return; }
+    await startOnlineCounter();
+    try { await supabaseClient.rpc("resolve_fight_cards"); } catch (e) {}
+    const { data, error } = await supabaseClient.from("fighters").select("*").eq("id", currentUser.id).maybeSingle();
+    if (error) { console.error(error); showScreen("mainMenu"); return; }
+    if (data) {
+        currentFighter = data;
+        await processTimeSystems();
+        loadFighterToCareer(currentFighter);
+        showScreen("fighterCareer");
+        await checkAndShowResults();
+    } else {
+        showScreen("mainMenu");
+    }
+}
+
+async function openFighterCareer() {
+    const authOk = await ensureAuth();
+    if (!authOk) { alert("Ошибка авторизации."); return; }
+    try { await supabaseClient.rpc("resolve_fight_cards"); } catch (e) {}
+    const { data, error } = await supabaseClient.from("fighters").select("*").eq("id", currentUser.id).maybeSingle();
+    if (error) { console.error(error); alert("Ошибка загрузки бойца: " + error.message); return; }
+    if (!data) { showScreen("fighterCreate"); updateStats(); return; }
+    currentFighter = data;
+    await processTimeSystems();
+    loadFighterToCareer(currentFighter);
+    showScreen("fighterCareer");
+    await checkAndShowResults();
+}
+
+async function startOnlineCounter() {
+    if (!currentUser) return;
+    if (onlineChannel) { try { await supabaseClient.removeChannel(onlineChannel); } catch (e) {} }
+    onlineChannel = supabaseClient.channel("mma-online", { config: { presence: { key: currentUser.id } } });
+    onlineChannel.on("presence", { event: "sync" }, () => {
+        const state = onlineChannel.presenceState();
+        let count = 0;
+        Object.keys(state).forEach(k => { count += state[k].length; });
+        const counter = document.getElementById("onlineCounter");
+        if (counter) counter.textContent = "Игроков в сети: " + count;
+    });
+    await onlineChannel.subscribe(async status => {
+        if (status === "SUBSCRIBED") await onlineChannel.track({ online: true });
+    });
+}
+
+const baseStats = { hands: 2, highKick: 2, lowKick: 2, elbows: 2, knees: 2, clinch: 2, ground: 2, takedown: 2, submission: 2, strength: 2, speed: 2, stamina: 2 };
+const styleBonuses = {
+    boxing: { hands: 8 },
+    kickboxing: { hands: 2, highKick: 3, lowKick: 3 },
+    muaythai: { hands: 2, elbows: 3, knees: 3, clinch: 3 },
+    wrestling: { ground: 5, takedown: 4 },
+    bjj: { ground: 3, takedown: 3, submission: 3 }
+};
+const statLabels = {
+    hands: "Удары руками", highKick: "Хай-кик", lowKick: "Лоу-кик",
+    elbows: "Локти", knees: "Колени", clinch: "Клинч", ground: "Партер",
+    takedown: "Тейкдаун", submission: "Сабмишн", strength: "Сила",
+    speed: "Скорость", stamina: "Выносливость"
+};
+
+function getFighterStats() {
+    const style = document.getElementById("fighterStyle").value;
+    const stats = { ...baseStats };
+    const bonuses = styleBonuses[style] || {};
+    Object.keys(bonuses).forEach(k => { stats[k] += bonuses[k]; });
+    return stats;
+}
+
+function updateStats() {
+    const style = document.getElementById("fighterStyle").value;
+    const bonuses = styleBonuses[style] || {};
+    let html = "";
+    Object.keys(statLabels).forEach(k => {
+        const bonus = bonuses[k] || 0;
+        const total = baseStats[k] + bonus;
+        html += `<div class="stat-row"><span>${statLabels[k]}</span><span>${total}${bonus ? `<span class="bonus">(+${bonus})</span>` : ""}</span></div>`;
+    });
+    document.getElementById("createStats").innerHTML = html;
+}
+
+async function createFighter() {
+    const message = document.getElementById("fighterCreateMessage");
+    message.innerHTML = "";
+    const authOk = await ensureAuth();
+    if (!authOk) { message.innerHTML = `<div class="error">Ошибка авторизации</div>`; return; }
+    const name = document.getElementById("fighterName").value.trim();
+    const country = document.getElementById("fighterCountry").value;
+    const style = document.getElementById("fighterStyle").value;
+    const weightClass = document.getElementById("fighterWeightClass").value;
+    if (!name) { message.innerHTML = `<div class="error">Введите имя и фамилию</div>`; return; }
+    const division = rosterDivisions[weightClass];
+    if (!division) { message.innerHTML = `<div class="error">Ошибка весовой категории</div>`; return; }
+    const weight = division.startWeight;
+    const stats = getFighterStats();
+    const now = new Date().toISOString();
+    const fighter = {
+        id: currentUser.id, name, country, style, weight, weight_class: weightClass,
+        energy: 100, upgrade_points: 0,
+        weight_updated_at: now, energy_updated_at: now, upgrade_points_updated_at: now,
+        last_weight_cut_at: null, stats
+    };
+    const { data, error } = await supabaseClient.from("fighters").insert(fighter).select().single();
+    if (error) { console.error(error); message.innerHTML = `<div class="error">Ошибка создания бойца: ${escapeHtml(error.message)}</div>`; return; }
+    currentFighter = data;
+    const { data: rosterResult, error: rosterError } = await supabaseClient.rpc("add_fighter_to_roster", { p_fighter_id: currentUser.id, p_division: weightClass });
+    if (rosterError) {
+        console.error(rosterError);
+        alert("Боец создан, но ошибка добавления в ростер: " + rosterError.message);
+    } else if (rosterResult && rosterResult.ok === true) {
+        if (rosterResult.rank === null || rosterResult.rank === undefined) {
+            alert("Боец создан. Все 15 мест в этой весовой категории уже заняты.");
+        }
+    } else {
+        alert("Боец создан, но не удалось добавить его в ростер: " + (rosterResult?.reason || "неизвестная ошибка"));
+    }
+    loadFighterToCareer(data);
+    showScreen("fighterCareer");
+}
+
+async function processTimeSystems() {
+    if (!currentFighter) return;
+    const now = Date.now();
+    let weight = Number(currentFighter.weight ?? 70);
+    let energy = Number(currentFighter.energy ?? 100);
+    let upgradePoints = Number(currentFighter.upgrade_points ?? 0);
+    const weightUpdated = new Date(currentFighter.weight_updated_at || new Date().toISOString()).getTime();
+    const energyUpdated = new Date(currentFighter.energy_updated_at || new Date().toISOString()).getTime();
+    const pointsUpdated = new Date(currentFighter.upgrade_points_updated_at || new Date().toISOString()).getTime();
+    const FOUR_HOURS = 4 * 60 * 60 * 1000;
+    const ONE_HOUR = 60 * 60 * 1000;
+    const FIVE_HOURS = 5 * 60 * 60 * 1000;
+    const weightPeriods = Math.floor((now - weightUpdated) / FOUR_HOURS);
+    if (weightPeriods > 0) {
+        weight = Math.min(130, weight + weightPeriods);
+        currentFighter.weight = weight;
+        currentFighter.weight_updated_at = new Date(weightUpdated + weightPeriods * FOUR_HOURS).toISOString();
+    }
+    const energyPeriods = Math.floor((now - energyUpdated) / ONE_HOUR);
+    if (energyPeriods > 0) {
+        energy = Math.min(100, energy + energyPeriods * 15);
+        currentFighter.energy = energy;
+        currentFighter.energy_updated_at = new Date(energyUpdated + energyPeriods * ONE_HOUR).toISOString();
+    }
+    const pointPeriods = Math.floor((now - pointsUpdated) / FIVE_HOURS);
+    if (pointPeriods > 0) {
+        upgradePoints += pointPeriods * 3;
+        currentFighter.upgrade_points = upgradePoints;
+        currentFighter.upgrade_points_updated_at = new Date(pointsUpdated + pointPeriods * FIVE_HOURS).toISOString();
+    }
+    await supabaseClient.from("fighters").update({
+        weight: currentFighter.weight, energy: currentFighter.energy,
+        weight_updated_at: currentFighter.weight_updated_at,
+        energy_updated_at: currentFighter.energy_updated_at,
+        upgrade_points: currentFighter.upgrade_points,
+        upgrade_points_updated_at: currentFighter.upgrade_points_updated_at
+    }).eq("id", currentUser.id);
+}
+
+function loadFighterToCareer(fighter) {
+    const popularity = fighter.popularity ?? 0;
+    const weight = Number(fighter.weight ?? 70).toFixed(1);
+    const energy = Number(fighter.energy ?? 100);
+    const energyClass = energy <= 30 ? "energy-low" : "energy-good";
+    document.getElementById("fighterCareerContent").innerHTML = `
+        <h1>МОЯ КАРЬЕРА</h1>
+        <div class="profile-card">
+            <div class="profile-name">${escapeHtml(fighter.name)}</div>
+            <div class="profile-info">Вес: ${weight} кг</div>
+            <div class="profile-info">Энергия: <span class="${energyClass}">${energy}</span></div>
+            <div class="profile-info">Популярность: ${popularity}</div>
+        </div>
+        <div class="career-grid">
+            <div class="career-card" onclick="showScreen('fighterFight')"><img src="IMG_20260921_145836_315.jpg"><div class="career-card-title">БОЙ</div></div>
+            <div class="career-card" onclick="showScreen('fighterTraining')"><img src="IMG_20260921_150403_327.jpg"><div class="career-card-title">ТРЕНИРОВКИ</div></div>
+            <div class="career-card" onclick="showScreen('fighterMedia')"><img src="IMG_20260921_150637_562.jpg"><div class="career-card-title">МЕДИА</div></div>
+            <div class="career-card" onclick="showScreen('fighterProfile')"><img src="IMG_763208df-b59f-400c-ace2-eea1f13ed794.jpg"><div class="career-card-title">ПРОФИЛЬ БОЙЦА</div></div>
+            <div class="career-card" onclick="openRoster('fighterCareer')"><img src="IMG_58c3ec5a-1dc6-44b6-b734-0ce584d60dcc.jpg"><div class="career-card-title">ОФИС</div></div>
+            <div class="career-card" onclick="showScreen('fighterDietitian')"><img src="pravilnyy_vrach_dietolog_chto_on_lechit_i_kak_ego_raspoznat.jpg"><div class="career-card-title">ДИЕТОЛОГ</div></div>
+        </div>
+        <button class="back-button" onclick="showScreen('mainMenu')">Назад</button>
+        <button class="back-button danger-button" onclick="deleteFighter()">Удалить бойца</button>
+    `;
+}
+
+async function openRoster(backScreen) {
+    rosterBackScreen = backScreen || "fighterCareer";
+    showScreen("fighterRoster");
+    renderRosterTabs();
+    await loadRoster(currentRosterDivision);
+}
+
+function renderRosterTabs() {
+    const container = document.getElementById("rosterTabs");
+    container.innerHTML = "";
+    Object.keys(rosterDivisions).forEach(key => {
+        const button = document.createElement("button");
+        button.className = "roster-tab";
+        if (key === currentRosterDivision) button.classList.add("active");
+        button.textContent = rosterDivisions[key].name;
+        button.onclick = async () => {
+            currentRosterDivision = key;
+            renderRosterTabs();
+            await loadRoster(key);
+        };
+        container.appendChild(button);
+    });
+    document.getElementById("rosterBackButton").onclick = () => showScreen(rosterBackScreen);
+}
+
+async function loadRoster(divisionKey) {
+    const container = document.getElementById("rosterContent");
+    const isPromotionHead = rosterBackScreen === "promotionCareer";
+    container.innerHTML = `<div class="roster-loading">Загрузка ростера...</div>`;
+    const { data, error } = await supabaseClient
+        .from("fighter_roster")
+        .select(`position, fighter_id, division, wins, losses, is_champion`)
+        .eq("division", divisionKey)
+        .order("position", { ascending: true, nullsFirst: false });
+    if (error) { console.error(error); container.innerHTML = `<div class="error">Ошибка загрузки ростера:<br>${escapeHtml(error.message)}</div>`; return; }
+    const fighterIds = (data || []).map(r => r.fighter_id);
+    const nameById = {};
+    if (fighterIds.length > 0) {
+        const { data: fd, error: fe } = await supabaseClient.from("fighters").select("id, name").in("id", fighterIds);
+        if (fe) console.error(fe);
+        else (fd || []).forEach(f => { nameById[f.id] = f.name; });
+    }
+    const fightersByRank = {};
+    let champion = null;
+    (data || []).forEach(row => {
+        if (row.is_champion) { champion = nameById[row.fighter_id] || "Неизвестный боец"; return; }
+        if (row.position !== null) fightersByRank[row.position] = row;
+    });
+    let html = `
+        <div class="roster-card">
+            <div class="roster-section-title">${escapeHtml(rosterDivisions[divisionKey].name)}</div>
+            <div class="roster-champion">
+                <div class="roster-champion-label">ЧЕМПИОН</div>
+                <div class="roster-champion-name">${champion ? escapeHtml(champion) : "НЕТ ЧЕМПИОНА"}</div>
+            </div>
+            <div class="roster-list">
+    `;
+    for (let rank = 1; rank <= 15; rank++) {
+        const fighter = fightersByRank[rank];
+        if (fighter) {
+            const fighterName = nameById[fighter.fighter_id] || "Неизвестный боец";
+            const surname = getSurname(fighterName);
+            const controls = isPromotionHead ? `
+                <div class="roster-controls">
+                    <button class="roster-arrow" onclick="moveFighter('${fighter.fighter_id}', '${divisionKey}', 'up')" ${rank === 1 ? "disabled" : ""}>▲</button>
+                    <button class="roster-arrow" onclick="moveFighter('${fighter.fighter_id}', '${divisionKey}', 'down')" ${rank === 15 ? "disabled" : ""}>▼</button>
+                </div>` : "";
+            html += `
+                <div class="roster-row${isPromotionHead ? " roster-row-editable" : ""}">
+                    <div class="roster-position">${rank}.</div>
+                    <div class="roster-fighter-name">${escapeHtml(surname)}</div>
+                    <div class="roster-record">${Number(fighter.wins ?? 0)}-${Number(fighter.losses ?? 0)}</div>
+                    ${controls}
+                </div>
+            `;
+        } else {
+            html += `
+                <div class="roster-row">
+                    <div class="roster-position">${rank}.</div>
+                    <div class="roster-fighter-name roster-empty">—</div>
+                    <div class="roster-record roster-empty">—</div>
+                </div>
+            `;
+        }
+    }
+    html += `</div></div>`;
+    container.innerHTML = html;
+}
+
+async function moveFighter(fighterId, division, direction) {
+    const { data, error } = await supabaseClient.rpc("move_fighter_in_roster", {
+        p_fighter_id: fighterId, p_division: division, p_direction: direction
+    });
+    if (error) { alert("Ошибка: " + error.message); return; }
+    if (!(data && data.ok === true)) { alert(data?.reason || "Не удалось переместить"); return; }
+    await loadRoster(currentRosterDivision);
+}
+
+function getSurname(name) {
+    const parts = String(name).trim().split(/\s+/);
+    if (parts.length === 0) return name;
+    return parts[parts.length - 1];
+}
+
+async function updateTrainingScreen() {
+    if (!currentFighter) return;
+    await processTimeSystems();
+    const points = Number(currentFighter.upgrade_points ?? 0);
+    const energy = Number(currentFighter.energy ?? 100);
+    document.getElementById("trainingPoints").textContent = points;
+    document.getElementById("trainingEnergy").textContent = energy;
+    const stats = currentFighter.stats || {};
+    let html = "";
+    Object.keys(statLabels).forEach(key => {
+        const value = Number(stats[key] ?? 0);
+        const disabled = points < 1 || energy < 5;
+        html += `
+            <div class="training-stat">
+                <div class="training-stat-line">
+                    <span class="training-stat-name">${statLabels[key]}</span>
+                    <span class="training-stat-value">${value}</span>
+                    <button class="upgrade-button" onclick="upgradeStat('${key}')" ${disabled ? "disabled" : ""}>+1</button>
+                </div>
+            </div>
+        `;
+    });
+    document.getElementById("trainingStats").innerHTML = html;
+}
+
+async function upgradeStat(statKey) {
+    if (!currentFighter) return;
+    await processTimeSystems();
+    const points = Number(currentFighter.upgrade_points ?? 0);
+    const energy = Number(currentFighter.energy ?? 100);
+    if (points < 1) { alert("Недостаточно поинтов для прокачки."); return; }
+    if (energy < 5) { alert("Недостаточно энергии."); return; }
+    if (!statLabels[statKey]) return;
+    const stats = { ...(currentFighter.stats || {}) };
+    stats[statKey] = Number(stats[statKey] ?? 0) + 1;
+    const { data, error } = await supabaseClient.from("fighters").update({
+        stats, upgrade_points: points - 1, energy: energy - 5
+    }).eq("id", currentUser.id).select().single();
+    if (error) { console.error(error); alert("Ошибка прокачки: " + error.message); return; }
+    currentFighter = data;
+    updateTrainingScreen();
+    loadFighterToCareer(currentFighter);
+}
+
+async function updateDietitian() {
+    if (!currentFighter) return;
+    await processTimeSystems();
+    const weight = Number(currentFighter.weight).toFixed(1);
+    const energy = Number(currentFighter.energy);
+    document.getElementById("dietWeight").textContent = weight + " кг";
+    document.getElementById("dietEnergy").textContent = energy;
+    const lastCut = currentFighter.last_weight_cut_at;
+    let cooldown = false;
+    if (lastCut) {
+        const elapsed = Date.now() - new Date(lastCut).getTime();
+        cooldown = elapsed < 60 * 60 * 1000;
+    }
+    document.querySelectorAll(".cut-button").forEach(b => { b.disabled = cooldown; });
+    const cooldownElement = document.getElementById("cutCooldown");
+    if (cooldown) {
+        const remaining = 60 * 60 * 1000 - (Date.now() - new Date(lastCut).getTime());
+        const minutes = Math.ceil(remaining / 60000);
+        cooldownElement.textContent = "Весогонка доступна через " + minutes + " мин.";
+    } else {
+        cooldownElement.textContent = "";
+    }
+}
+
+async function cutWeight(amount, energyCost) {
+    if (!currentFighter) return;
+    await processTimeSystems();
+    const now = Date.now();
+    const lastCut = currentFighter.last_weight_cut_at;
+    if (lastCut) {
+        const elapsed = now - new Date(lastCut).getTime();
+        if (elapsed < 60 * 60 * 1000) { alert("Весогонка доступна только раз в час."); await updateDietitian(); return; }
+    }
+    const currentWeight = Number(currentFighter.weight);
+    const currentEnergy = Number(currentFighter.energy);
+    if (currentWeight <= 60) { alert("Минимальный вес — 60 кг."); return; }
+    if (currentEnergy < energyCost) { alert("Недостаточно энергии."); return; }
+    const newWeight = Math.max(60, Math.round((currentWeight - amount) * 10) / 10);
+    const newEnergy = Math.max(1, currentEnergy - energyCost);
+    const timestamp = new Date().toISOString();
+    const { data, error } = await supabaseClient.from("fighters").update({
+        weight: newWeight, energy: newEnergy, last_weight_cut_at: timestamp
+    }).eq("id", currentUser.id).select().single();
+    if (error) { console.error(error); alert("Ошибка изменения веса: " + error.message); return; }
+    currentFighter = data;
+    await updateDietitian();
+    loadFighterToCareer(currentFighter);
+}
+
+function updateCareerStats() {
+    if (!currentFighter) return;
+    const stats = currentFighter.stats || {};
+    let html = "";
+    Object.keys(statLabels).forEach(key => {
+        html += `<div class="stat-row"><span>${statLabels[key]}</span><span>${stats[key] ?? 0}</span></div>`;
+    });
+    document.getElementById("careerStats").innerHTML = html;
+}
+
+async function deleteFighter() {
+    if (!currentFighter) return;
+    if (!confirm("Удалить бойца? Это действие нельзя отменить.")) return;
+    const { error } = await supabaseClient.from("fighters").delete().eq("id", currentFighter.id);
+    if (error) { alert("Ошибка удаления: " + error.message); return; }
+    currentFighter = null;
+    showScreen("mainMenu");
+}
+
+function openPromotion() {
+    const savedName = localStorage.getItem("promotionHeadName");
+    if (savedName) document.getElementById("promotionHeadName").value = savedName;
+    showScreen("promotionLogin");
+}
+
+async function claimPromotion() {
+    const message = document.getElementById("promotionMessage");
+    message.innerHTML = "";
+    const name = document.getElementById("promotionHeadName").value.trim();
+    const code = document.getElementById("promotionCode").value.trim();
+    if (!name || !code) { message.innerHTML = `<div class="error">Заполните все поля</div>`; return; }
+    const authOk = await ensureAuth();
+    if (!authOk) { message.innerHTML = `<div class="error">Ошибка авторизации</div>`; return; }
+    const { data, error } = await supabaseClient.rpc("claim_promotion", { p_code: code });
+    if (error) { message.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`; return; }
+    if (!(data && data.ok === true)) {
+        message.innerHTML = `<div class="error">${data?.reason || "Промоушн уже занят."}</div>`;
+        return;
+    }
+    localStorage.setItem("promotionHeadName", name);
+    document.getElementById("promotionHeadNameDisplay").textContent = name;
+    startPromotionHeartbeat();
+    showScreen("promotionCareer");
+}
+
+function startPromotionHeartbeat() {
+    stopPromotionHeartbeat();
+    promotionHeartbeatTimer = setInterval(async () => {
+        const { data, error } = await supabaseClient.rpc("promotion_heartbeat");
+        if (error || data === false) {
+            stopPromotionHeartbeat();
+            showScreen("mainMenu");
+            alert("Вы больше не являетесь главой промоушна.");
+        }
+    }, 30000);
+}
+
+function stopPromotionHeartbeat() {
+    if (promotionHeartbeatTimer) {
+        clearInterval(promotionHeartbeatTimer);
+        promotionHeartbeatTimer = null;
+    }
+}
+
+async function releasePromotion() {
+    stopPromotionHeartbeat();
+    const { error } = await supabaseClient.rpc("release_promotion");
+    if (error) { alert("Ошибка выхода: " + error.message); return; }
+    showScreen("mainMenu");
+}
+
+async function openCardBuilder() {
+    cardSlotsState = [];
+    for (let i = 0; i < 5; i++) cardSlotsState.push({ left: null, right: null, isTitle: false });
+    cardFighterData = {};
+    selectedFighterId = null;
+    cardRosterDivision = "lightweight";
+    document.getElementById("cardName").value = "";
+    document.getElementById("cardDate").value = "";
+    document.getElementById("cardMessage").innerHTML = "";
+    showScreen("cardBuilder");
+    renderCardSlots();
+    renderCardRosterTabs();
+    await loadCardRoster(cardRosterDivision);
+}
+
+function renderCardSlots() {
+    const container = document.getElementById("cardSlots");
+    container.innerHTML = "";
+    cardSlotLabels.forEach((labelInfo, index) => {
+        const slot = cardSlotsState[index];
+        const leftName = slot.left ? (cardFighterData[slot.left]?.surname || "???") : "ПУСТО";
+        const rightName = slot.right ? (cardFighterData[slot.right]?.surname || "???") : "ПУСТО";
+        const div = document.createElement("div");
+        div.className = "card-slot";
+        div.innerHTML = `
+            <div class="card-slot-label ${labelInfo.cls}">${labelInfo.text}</div>
+            <div class="card-slot-title-toggle">
+                <input type="checkbox" id="title_${index}" ${slot.isTitle ? "checked" : ""} onchange="toggleTitleSlot(${index}, this.checked)">
+                <label for="title_${index}" style="margin:0;">🏆 Чемпионский бой</label>
+            </div>
+            <div class="card-vs-row">
+                <div class="card-side left ${slot.left ? "filled" : ""}" onclick="placeInSlot(${index}, 'left')">${escapeHtml(leftName)}</div>
+                <div class="card-vs-text">VS</div>
+                <div class="card-side right ${slot.right ? "filled" : ""}" onclick="placeInSlot(${index}, 'right')">${escapeHtml(rightName)}</div>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function toggleTitleSlot(index, value) { cardSlotsState[index].isTitle = value; }
+
+function renderCardRosterTabs() {
+    const container = document.getElementById("cardRosterTabs");
+    container.innerHTML = "";
+    Object.keys(rosterDivisions).forEach(key => {
+        const button = document.createElement("button");
+        button.className = "roster-tab";
+        if (key === cardRosterDivision) button.classList.add("active");
+        button.textContent = rosterDivisions[key].name;
+        button.onclick = async () => {
+            cardRosterDivision = key;
+            renderCardRosterTabs();
+            await loadCardRoster(key);
+        };
+        container.appendChild(button);
+    });
+}
+
+async function loadCardRoster(divisionKey) {
+    const container = document.getElementById("cardRosterContent");
+    container.innerHTML = `<div class="roster-loading">Загрузка...</div>`;
+    const { data, error } = await supabaseClient
+        .from("fighter_roster")
+        .select("position, fighter_id, division, wins, losses, is_champion")
+        .eq("division", divisionKey)
+        .order("position", { ascending: true, nullsFirst: false });
+    if (error) { container.innerHTML = `<div class="error">Ошибка: ${escapeHtml(error.message)}</div>`; return; }
+    const fighterIds = (data || []).map(r => r.fighter_id);
+    const infoById = {};
+    if (fighterIds.length > 0) {
+        const { data: fd } = await supabaseClient.from("fighters").select("id, name, weight_class").in("id", fighterIds);
+        (fd || []).forEach(f => {
+            infoById[f.id] = { name: f.name, surname: getSurname(f.name), weight_class: f.weight_class };
+            cardFighterData[f.id] = infoById[f.id];
+        });
+    }
+    const championRow = (data || []).find(r => r.is_champion);
+    let html = `<div class="roster-card"><div class="roster-list">`;
+    if (championRow) {
+        const info = infoById[championRow.fighter_id];
+        const name = info ? info.surname : "???";
+        const isSelected = selectedFighterId === championRow.fighter_id;
+        html += `
+            <div class="card-roster-fighter champion-row${isSelected ? " selected" : ""}"
+                 onclick="selectFighter('${championRow.fighter_id}')">
+                <div class="roster-position">🏆</div>
+                <div class="roster-fighter-name">${escapeHtml(name)}</div>
+                <div class="roster-record">${Number(championRow.wins ?? 0)}-${Number(championRow.losses ?? 0)}</div>
+            </div>
+        `;
+    }
+    for (let rank = 1; rank <= 15; rank++) {
+        const row = (data || []).find(r => r.position === rank);
+        if (row) {
+            const info = infoById[row.fighter_id];
+            const name = info ? info.surname : "???";
+            const isSelected = selectedFighterId === row.fighter_id;
+            html += `
+                <div class="card-roster-fighter${isSelected ? " selected" : ""}" onclick="selectFighter('${row.fighter_id}')">
+                    <div class="roster-position">${rank}.</div>
+                    <div class="roster-fighter-name">${escapeHtml(name)}</div>
+                    <div class="roster-record">${Number(row.wins ?? 0)}-${Number(row.losses ?? 0)}</div>
+                </div>
+            `;
+        }
+    }
+    html += `</div></div>`;
+    container.innerHTML = html;
+}
+
+function selectFighter(fighterId) {
+    if (selectedFighterId === fighterId) selectedFighterId = null;
+    else selectedFighterId = fighterId;
+    loadCardRoster(cardRosterDivision);
+}
+
+function placeInSlot(slotIndex, side) {
+    const slot = cardSlotsState[slotIndex];
+    if (selectedFighterId) {
+        const selectedInfo = cardFighterData[selectedFighterId];
+        if (!selectedInfo) { alert("Ошибка данных бойца"); return; }
+        const otherSide = side === "left" ? slot.right : slot.left;
+        if (otherSide) {
+            const otherInfo = cardFighterData[otherSide];
+            if (otherInfo && otherInfo.weight_class !== selectedInfo.weight_class) {
+                alert("Нельзя ставить бойцов из разных весовых категорий");
+                return;
+            }
+        }
+        for (let i = 0; i < cardSlotsState.length; i++) {
+            if (cardSlotsState[i].left === selectedFighterId || cardSlotsState[i].right === selectedFighterId) {
+                alert("Этот боец уже участвует в другом бою карда");
+                return;
+            }
+        }
+        if (side === "left") slot.left = selectedFighterId;
+        else slot.right = selectedFighterId;
+        selectedFighterId = null;
+    } else {
+        if (side === "left") slot.left = null;
+        else slot.right = null;
+    }
+    renderCardSlots();
+    loadCardRoster(cardRosterDivision);
+}
+
+/* =====================================================
+   ГЕНЕРАЦИЯ БОЯ
+===================================================== */
+function sumStats(stats) {
+    if (!stats) return 0;
+    return Object.values(stats).reduce((a, b) => a + Number(b || 0), 0);
+}
+
+function decideFight(leftStats, rightStats) {
+    const sL = sumStats(leftStats);
+    const sR = sumStats(rightStats);
+    const diff = Math.abs(sL - sR);
+    const stronger = sL >= sR ? "L" : "R";
+    let strongWinChance = 0.5;
+    if (diff >= 1 && diff <= 5) strongWinChance = 0.60;
+    else if (diff >= 6 && diff <= 15) strongWinChance = 0.75;
+    else if (diff >= 16) strongWinChance = 0.90;
+    const isLucky = Math.random() < 0.10;
+    let winner, finish;
+    if (isLucky) {
+        winner = stronger === "L" ? "R" : "L";
+        const r = Math.random();
+        if (r < 0.70) finish = "ko";
+        else if (r < 0.90) finish = "submission";
+        else finish = "decision_split";
+    } else {
+        winner = Math.random() < strongWinChance ? stronger : (stronger === "L" ? "R" : "L");
+        const r = Math.random();
+        if (r < 0.55) finish = "decision_uni";
+        else if (r < 0.85) finish = "decision_split";
+        else if (r < 0.93) finish = "ko";
+        else finish = "submission";
+    }
+    return { winner, finish, isLucky };
+}
+
+function buildFightData(leftName, rightName, leftStats, rightStats) {
+    const C = fightComments;
+    const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const fill = (tpl, A, B) => tpl.replace(/{A}/g, A).replace(/{B}/g, B);
+    const { winner, finish, isLucky } = decideFight(leftStats, rightStats);
+    const winnerName = winner === "L" ? leftName : rightName;
+    const loserName = winner === "L" ? rightName : leftName;
+    let winnerBias = 0.5;
+    if (finish === "decision_uni") winnerBias = 0.70;
+    else if (finish === "decision_split") winnerBias = isLucky ? 0.30 : 0.55;
+    else if (finish === "ko" || finish === "submission") winnerBias = isLucky ? 0.30 : 0.70;
+    let finishRound = 0;
+    if (finish === "ko" || finish === "submission") finishRound = Math.floor(Math.random() * 3) + 1;
+    const rounds = [];
+    let position = "strike";
+    for (let r = 1; r <= 3; r++) {
+        if (finishRound && r > finishRound) break;
+        const isFinishRound = (finishRound === r);
+        const commentsThisRound = [];
+        for (let i = 0; i < 10; i++) {
+            const actorIsWinner = Math.random() < winnerBias;
+            const actor = actorIsWinner ? winnerName : loserName;
+            const opp = actorIsWinner ? loserName : winnerName;
+            const actorSide = actorIsWinner ? winner : (winner === "L" ? "R" : "L");
+            let picked = null;
+            if (position === "strike") {
+                const rr = Math.random();
+                if (rr < 0.35) picked = rand(C.hands);
+                else if (rr < 0.55) picked = rand(C.combinations);
+                else if (rr < 0.70) picked = rand(C.kicks);
+                else if (rr < 0.76) picked = rand(C.knees);
+                else if (rr < 0.82) picked = rand(C.elbows);
+                else if (rr < 0.90) { picked = rand(C.takedown); position = "ground"; }
+                else if (rr < 0.95) picked = rand(C.knockdown);
+                else picked = rand(C.defenseStrike);
+            } else {
+                const rr = Math.random();
+                if (rr < 0.35) picked = rand(C.ground);
+                else if (rr < 0.55) picked = rand(C.submissionAttempt);
+                else if (rr < 0.70) picked = rand(C.defenseGround);
+                else if (rr < 0.90) {
+                    commentsThisRound.push({ text: `${opp} выбирается в стойку`, pts: 0, side: null });
+                    position = "strike";
+                    continue;
+                } else picked = rand(C.ground);
+            }
+            const text = fill(picked[0], actor, opp);
+            commentsThisRound.push({ text, pts: picked[1], side: actorSide });
+        }
+        if (isFinishRound) {
+            if (finish === "ko") {
+                commentsThisRound.push({ text: fill(rand(C.knockout), winnerName, loserName), pts: 0, side: winner });
+                commentsThisRound.push({ text: fill(rand(fightFinishers.ko), winnerName, loserName), pts: 0, side: null });
+            } else {
+                if (position === "strike") commentsThisRound.push({ text: fill(rand(C.takedown), winnerName, loserName), pts: 0, side: winner });
+                commentsThisRound.push({ text: fill(rand(C.submission), winnerName, loserName), pts: 0, side: winner });
+                commentsThisRound.push({ text: fill(rand(fightFinishers.submission), winnerName, loserName), pts: 0, side: null });
+            }
+        }
+        let lPts = 0, rPts = 0;
+        for (const c of commentsThisRound) {
+            if (c.side === "L") lPts += c.pts;
+            else if (c.side === "R") rPts += c.pts;
+        }
+        let scoreL, scoreR;
+        if (isFinishRound && (finish === "ko" || finish === "submission")) {
+            scoreL = finish === "ko" ? "КО" : "САБМИШН";
+            scoreR = null;
+        } else {
+            const diff = lPts - rPts;
+            const abs = Math.abs(diff);
+            let ptsWin = 10, ptsLose = 10;
+            if (abs === 0) { ptsWin = 10; ptsLose = 10; }
+            else if (abs <= 5) { ptsWin = 10; ptsLose = 9; }
+            else if (abs <= 15) { ptsWin = 10; ptsLose = 8; }
+            else { ptsWin = 10; ptsLose = 7; }
+            if (diff > 0) { scoreL = ptsWin; scoreR = ptsLose; }
+            else if (diff < 0) { scoreL = ptsLose; scoreR = ptsWin; }
+            else { scoreL = 10; scoreR = 10; }
+        }
+        rounds.push({
+            round: r,
+            comments: commentsThisRound.map(c => c.text),
+            scoreL, scoreR,
+            isFinish: isFinishRound && (finish === "ko" || finish === "submission")
+        });
+    }
+    return { winner, finish, isLucky, rounds };
+}
+
+async function saveCard() {
+    const message = document.getElementById("cardMessage");
+    message.innerHTML = "";
+    const name = document.getElementById("cardName").value.trim();
+    const dateStr = document.getElementById("cardDate").value;
+    if (!name) { message.innerHTML = `<div class="error">Введите название карда</div>`; return; }
+    if (!dateStr) { message.innerHTML = `<div class="error">Введите дату и время</div>`; return; }
+    let completedFights = 0;
+    for (let i = 0; i < 5; i++) {
+        const s = cardSlotsState[i];
+        const hasLeft = !!s.left;
+        const hasRight = !!s.right;
+        if (hasLeft && hasRight) completedFights++;
+        else if (hasLeft || hasRight) { message.innerHTML = `<div class="error">В слоте ${i + 1} заполнен только один боец</div>`; return; }
+    }
+    if (completedFights < 3) { message.innerHTML = `<div class="error">Надо добавить минимум 3 боя</div>`; return; }
+    const fightDate = new Date(dateStr).toISOString();
+    const { data: card, error: cardError } = await supabaseClient
+        .from("fight_cards")
+        .insert({ head_id: currentUser.id, card_name: name, fight_date: fightDate })
+        .select().single();
+    if (cardError) { message.innerHTML = `<div class="error">Ошибка: ${escapeHtml(cardError.message)}</div>`; return; }
+    const allIds = [];
+    for (let i = 0; i < 5; i++) {
+        const s = cardSlotsState[i];
+        if (s.left) allIds.push(s.left);
+        if (s.right) allIds.push(s.right);
+    }
+    const statsById = {};
+    const nameById = {};
+    if (allIds.length) {
+        const { data: fData } = await supabaseClient
+            .from("fighters").select("id, name, stats").in("id", allIds);
+        (fData || []).forEach(f => {
+            statsById[f.id] = f.stats || {};
+            nameById[f.id] = f.name;
+        });
+    }
+    for (let i = 0; i < 5; i++) {
+        const s = cardSlotsState[i];
+        if (!s.left || !s.right) continue;
+        const leftInfo = cardFighterData[s.left];
+        const rightInfo = cardFighterData[s.right];
+        const leftName = nameById[s.left] || "???";
+        const rightName = nameById[s.right] || "???";
+        const leftStats = statsById[s.left] || {};
+        const rightStats = statsById[s.right] || {};
+        const fightData = buildFightData(leftName, rightName, leftStats, rightStats);
+        const winnerId = fightData.winner === "L" ? s.left : s.right;
+        const loserId = winnerId === s.left ? s.right : s.left;
+        const { error: slotError } = await supabaseClient.from("fight_slots").insert({
+            card_id: card.id,
+            slot_number: i + 1,
+            left_fighter_id: s.left,
+            right_fighter_id: s.right,
+            left_division: leftInfo.weight_class,
+            right_division: rightInfo.weight_class,
+            is_title: s.isTitle,
+            winner_id: winnerId,
+            commentary: fightData.rounds,
+            score: fightData.rounds.map(r => ({ round: r.round, left: r.scoreL, right: r.scoreR }))
+        });
+        if (slotError) { message.innerHTML = `<div class="error">Ошибка слота ${i + 1}: ${escapeHtml(slotError.message)}</div>`; return; }
+        await supabaseClient.rpc("apply_fight_result", {
+            p_winner_id: winnerId,
+            p_loser_id: loserId,
+            p_is_title: s.isTitle,
+            p_division: leftInfo.weight_class
+        }).catch(() => {});
+    }
+    message.innerHTML = `<div class="success">Кард сохранён!</div>`;
+    setTimeout(() => showScreen("promotionCareer"), 1000);
+}
+
+async function checkAndShowResults() {
+    const seen = JSON.parse(localStorage.getItem("seenCards") || "[]");
+    const { data: cards, error } = await supabaseClient
+        .from("fight_cards").select("id, card_name, resolved, fight_date").order("fight_date", { ascending: true });
+    if (error || !cards) return;
+    const now = new Date();
+    for (const card of cards) {
+        if (new Date(card.fight_date) > now) continue;
+        if (seen.includes(card.id)) continue;
+        await showCardResults(card.id);
+        return;
+    }
+}
+
+async function showCardResults(cardId) {
+    showScreen("cardResults");
+    const container = document.getElementById("cardResultsContent");
+    container.innerHTML = `<div class="roster-loading">Загрузка результатов...</div>`;
+
+    const { data: card, error: cardErr } = await supabaseClient.from("fight_cards").select("*").eq("id", cardId).single();
+    if (cardErr) { container.innerHTML = `<div class="error">${cardErr.message}</div>`; return; }
+
+    const { data: slots, error: slotsErr } = await supabaseClient
+        .from("fight_slots").select("*").eq("card_id", cardId).order("slot_number", { ascending: true });
+    if (slotsErr) { container.innerHTML = `<div class="error">${slotsErr.message}</div>`; return; }
+
+    const allIds = [];
+    (slots || []).forEach(s => {
+        if (s.left_fighter_id) allIds.push(s.left_fighter_id);
+        if (s.right_fighter_id) allIds.push(s.right_fighter_id);
+    });
+    const nameById = {};
+    if (allIds.length) {
+        const { data: fd } = await supabaseClient.from("fighters").select("id, name").in("id", allIds);
+        (fd || []).forEach(f => { nameById[f.id] = f.name; });
+    }
+
+    let html = `<h1>${escapeHtml(card.card_name)}</h1>`;
+    (slots || []).forEach((slot, i) => {
+        const L = nameById[slot.left_fighter_id] || "???";
+        const R = nameById[slot.right_fighter_id] || "???";
+        const W = nameById[slot.winner_id] || "???";
+        html += `
+            <div class="result-fight" id="fight_block_${i}">
+                <div class="result-fight-title">${escapeHtml(L)} vs ${escapeHtml(R)}${slot.is_title ? " 🏆" : ""}</div>
+                <div id="fight_comments_${i}"></div>
+                <div id="fight_score_${i}"></div>
+                <div class="result-winner" id="fight_winner_${i}" style="display:none;">🏆 ${escapeHtml(W)} побеждает!</div>
+            </div>
+        `;
+    });
+    html += `<button class="skip-button" onclick="skipPlaybackAll(${cardId})">⏩ Пропустить комментарии</button>`;
+    html += `<button class="red-button" onclick="closeResults(${cardId})">В ГЛАВНОЕ МЕНЮ</button>`;
+    container.innerHTML = html;
+
+    skipPlayback = false;
+    playbackTimers = [];
+
+    let globalIndex = 0;
+
+    (slots || []).forEach((slot, fi) => {
+        const rounds = slot.commentary || [];
+        rounds.forEach((round, ri) => {
+            round.comments.forEach((text) => {
+                const idx = globalIndex;
+                const t = setTimeout(() => {
+                    if (skipPlayback) return;
+                    const box = document.getElementById(`fight_comments_${fi}`);
+                    if (!box) return;
+                    const div = document.createElement("div");
+                    div.className = "result-comment";
+                    div.textContent = text;
+                    box.appendChild(div);
+                }, idx * 3000);
+                playbackTimers.push(t);
+                globalIndex++;
+            });
+
+            /* После конца раунда — показать счёт */
+            const scoreIdx = globalIndex;
+            const tScore = setTimeout(() => {
+                if (skipPlayback) return;
+                const box = document.getElementById(`fight_score_${fi}`);
+                if (!box) return;
+                const div = document.createElement("div");
+                div.className = "result-round-score";
+                if (round.isFinish) {
+                    div.textContent = `Раунд ${round.round}: ${round.scoreL}`;
+                } else {
+                    div.textContent = `Раунд ${round.round}: ${round.scoreL}-${round.scoreR}`;
+                }
+                box.appendChild(div);
+            }, scoreIdx * 3000);
+            playbackTimers.push(tScore);
+            globalIndex++;
+        });
+
+        const winIdx = globalIndex;
+        const tWin = setTimeout(() => {
+            if (skipPlayback) return;
+            const w = document.getElementById(`fight_winner_${fi}`);
+            if (w) w.style.display = "block";
+        }, winIdx * 3000);
+        playbackTimers.push(tWin);
+        globalIndex++;
+    });
+}
+
+function skipPlaybackAll(cardId) {
+    skipPlayback = true;
+    playbackTimers.forEach(t => clearTimeout(t));
+    playbackTimers = [];
+    showCardResultsInstant(cardId);
+}
+
+async function showCardResultsInstant(cardId) {
+    const container = document.getElementById("cardResultsContent");
+    const { data: card } = await supabaseClient.from("fight_cards").select("*").eq("id", cardId).single();
+    const { data: slots } = await supabaseClient
+        .from("fight_slots").select("*").eq("card_id", cardId).order("slot_number", { ascending: true });
+
+    const allIds = [];
+    (slots || []).forEach(s => {
+        if (s.left_fighter_id) allIds.push(s.left_fighter_id);
+        if (s.right_fighter_id) allIds.push(s.right_fighter_id);
+    });
+    const nameById = {};
+    if (allIds.length) {
+        const { data: fd } = await supabaseClient.from("fighters").select("id, name").in("id", allIds);
+        (fd || []).forEach(f => { nameById[f.id] = f.name; });
+    }
+
+    let html = `<h1>${escapeHtml(card.card_name)}</h1>`;
+    for (const slot of (slots || [])) {
+        const L = nameById[slot.left_fighter_id] || "???";
+        const R = nameById[slot.right_fighter_id] || "???";
+        const W = nameById[slot.winner_id] || "???";
+        const rounds = slot.commentary || [];
+        let commentsHtml = "";
+        let scoresHtml = "";
+        for (const r of rounds) {
+            for (const c of r.comments) commentsHtml += `<div class="result-comment">${escapeHtml(c)}</div>`;
+            if (r.isFinish) scoresHtml += `<div class="result-round-score">Раунд ${r.round}: ${r.scoreL}</div>`;
+            else scoresHtml += `<div class="result-round-score">Раунд ${r.round}: ${r.scoreL}-${r.scoreR}</div>`;
+        }
+        html += `
+            <div class="result-fight">
+                <div class="result-fight-title">${escapeHtml(L)} vs ${escapeHtml(R)}${slot.is_title ? " 🏆" : ""}</div>
+                ${commentsHtml}
+                ${scoresHtml}
+                <div class="result-winner">🏆 ${escapeHtml(W)} побеждает!</div>
+            </div>
+        `;
+    }
+    html += `<button class="red-button" onclick="closeResults(${cardId})">В ГЛАВНОЕ МЕНЮ</button>`;
+    container.innerHTML = html;
+}
+
+function closeResults(cardId) {
+    skipPlayback = true;
+    playbackTimers.forEach(t => clearTimeout(t));
+    playbackTimers = [];
+    const seen = JSON.parse(localStorage.getItem("seenCards") || "[]");
+    if (!seen.includes(cardId)) seen.push(cardId);
+    localStorage.setItem("seenCards", JSON.stringify(seen));
+    showScreen("mainMenu");
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+document.addEventListener("DOMContentLoaded", () => { updateStats(); });
+</script>
+
+</body>
+  </html>

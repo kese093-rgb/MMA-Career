@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Твоя карьера промоушна</title>
+<script>
+window.onerror = function(msg, url, line, col) {
+  var d = document.createElement('div');
+  d.style.cssText = 'position:fixed;inset:0;background:#000;color:#ff4444;padding:20px;font-size:14px;z-index:99999;overflow:auto;white-space:pre-wrap;';
+  d.textContent = 'ОШИБКА:\n' + msg + '\n\nФайл: ' + url + '\nСтрока: ' + line + ':' + col;
+  document.body.appendChild(d);
+};
+</script>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #050505; color: white; font-family: Arial, sans-serif; overflow: hidden; user-select: none; -webkit-user-select: none; touch-action: none; }
+
+.screen { display: none; min-height: 100vh; padding: 20px; background: linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.75)), url("pngtree-vertical-geometric-trendy-composition-of-silver-lines-on-black-neutral-background-image_605703.jpg") center/cover no-repeat fixed; }
+.screen.active { display: block; }
+
+#loadingScreen { position: fixed; inset: 0; padding: 0; background: #000; display: none; align-items: center; justify-content: center; z-index: 10000; }
+#loadingScreen.active { display: flex; }
+#loadingImg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#loadingContinue { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); padding: 14px 32px; background: rgba(200,0,0,0.9); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 900; z-index: 10; display: none; cursor: pointer; }
+#loadingContinue.visible { display: block; }
+
+#introScreen { position: fixed; inset: 0; padding: 0; background: #000; display: none; align-items: center; justify-content: center; z-index: 9999; }
+#introScreen.active { display: flex; }
+#introVideo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
+#introSkip { position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); padding: 14px 32px; background: rgba(200,0,0,0.9); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 900; z-index: 10; display: none; cursor: pointer; }
+#introSkip.visible { display: block; }
+
+/* City Screen */
+#cityScreen { position: fixed; inset: 0; padding: 0; overflow: hidden; background: #000; z-index: 5000; }
+#cityViewport { width: 100%; height: 100%; overflow: hidden; position: relative; touch-action: none; cursor: grab; }
+#cityViewport:active { cursor: grabbing; }
+#cityWorld { position: absolute; top: 0; left: 0; height: 100vh; width: auto; max-width: none; will-change: transform; }
+#cityWorld img { height: 100%; width: auto; display: block; pointer-events: none; }
+
+/* Ползунок */
+#scrollBar { position: absolute; bottom: 15px; left: 5%; width: 90%; height: 8px; background: rgba(255, 255, 255, 0.2); border-radius: 4px; z-index: 10; }
+#scrollThumb { position: absolute; top: 0; left: 0; height: 100%; width: 50px; background: rgba(255, 255, 255, 0.7); border-radius: 4px; cursor: grab; }
+#scrollThumb:active { background: #fff; cursor: grabbing; }
+
+/* Форма */
+h1 { text-align: center; margin-top: 10px; font-size: 26px; }
+.form-box { max-width: 500px; margin: 20px auto; }
+label { display: block; margin-top: 14px; margin-bottom: 6px; font-weight: bold; font-size: 14px; color: #ccc; }
+input, select { width: 100%; padding: 13px; background: #151515; color: white; border: 1px solid #333; border-radius: 8px; font-size: 16px; }
+.red-button { width: 100%; margin-top: 20px; padding: 16px; background: red; color: white; border: none; border-radius: 9px; font-size: 17px; font-weight: 900; }
+.back-button { width: 100%; margin-top: 12px; padding: 14px; background: #222; color: white; border: 1px solid #444; border-radius: 8px; font-size: 15px; font-weight: 900; }
+.section-title { color: gold; font-weight: 900; font-size: 16px; margin-top: 24px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { background: #171717; color: white; border: 1px solid #333; padding: 9px 13px; border-radius: 8px; font-weight: 900; font-size: 13px; cursor: pointer; }
+.chip.active { background: red; border-color: red; }
+.color-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.color-dot { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }
+.color-dot.active { border-color: white; }
+.logo-preview-wrap { display: flex; justify-content: center; margin: 20px 0; }
+.logo-preview { width: 180px; height: 180px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 46px; letter-spacing: 2px; background: #000; color: gold; box-shadow: 0 10px 30px rgba(0,0,0,.7); }
+</style>
+</head>
+<body>
+
+<section id="loadingScreen" class="screen active">
+    <img id="loadingImg" src="IMG_20261015_131935_584.jpg" alt="Загрузка">
+    <button id="loadingContinue" onclick="startIntroWithSound()">ПРОДОЛЖИТЬ</button>
+</section>
+
+<section id="introScreen" class="screen">
+    <video id="introVideo" src="VID_20261015_124945_834.mp4" playsinline preload="auto"></video>
+    <button id="introSkip" onclick="skipIntro()">ПРОПУСТИТЬ</button>
+</section>
+
+<section id="cityScreen" class="screen">
+    <div id="cityViewport">
+        <div id="cityWorld">
+            <img src="city_scene_4k.png" alt="Город">
+        </div>
+        <div id="scrollBar">
+            <div id="scrollThumb"></div>
+        </div>
+    </div>
+</section>
+
+<section id="createPromotion" class="screen">
+    <h1>ПРОФИЛЬ ПРОМОУШНА</h1>
+    <div class="form-box">
+        <label>Название</label>
+        <input id="promoName" type="text" placeholder="Например: Prime League">
+
+        <label>Короткое название (макс. 3 буквы)</label>
+        <input id="promoShortName" type="text" maxlength="3" placeholder="PLY">
+
+        <label>Родная страна</label>
+        <select id="promoCountry">
+            <option value="США">США</option>
+            <option value="Россия">Россия</option>
+            <option value="Бразилия">Бразилия</option>
+            <option value="Великобритания">Великобритания</option>
+            <option value="Канада">Канада</option>
+            <option value="Австралия">Австралия</option>
+            <option value="Китай">Китай</option>
+            <option value="Япония">Япония</option>
+            <option value="Южная Корея">Южная Корея</option>
+            <option value="Германия">Германия</option>
+            <option value="Франция">Франция</option>
+            <option value="Испания">Испания</option>
+            <option value="Италия">Италия</option>
+            <option value="Мексика">Мексика</option>
+            <option value="Аргентина">Аргентина</option>
+            <option value="ОАЭ">ОАЭ</option>
+            <option value="Индия">Индия</option>
+            <option value="Казахстан">Казахстан</option>
+            <option value="Украина">Украина</option>
+            <option value="Нидерланды">Нидерланды</option>
+        </select>
+
+        <div class="section-title">Логотип промоушна</div>
+        <div class="logo-preview-wrap">
+            <div id="logoPreview" class="logo-preview">PLY</div>
+        </div>
+
+        <label>Форма</label>
+        <div class="chips" id="shapeChips">
+            <button type="button" class="chip" data-val="rectangle">Прямоугольник</button>
+            <button type="button" class="chip" data-val="rounded">Скруглённый</button>
+            <button type="button" class="chip" data-val="octagon">Восьмиугольник</button>
+            <button type="button" class="chip active" data-val="circle">Круг</button>
+        </div>
+
+        <label>Шрифт</label>
+        <div class="chips" id="fontChips">
+            <button type="button" class="chip active" data-val="bold">Bold</button>
+            <button type="button" class="chip" data-val="condensed">Condensed</button>
+            <button type="button" class="chip" data-val="italic">Italic</button>
+            <button type="button" class="chip" data-val="wide">Wide</button>
+            <button type="button" class="chip" data-val="serif">Serif</button>
+        </div>
+
+        <label>Рамка</label>
+        <div class="chips" id="borderChips">
+            <button type="button" class="chip active" data-val="none">Нет</button>
+            <button type="button" class="chip" data-val="thin">Тонкая</button>
+            <button type="button" class="chip" data-val="thick">Толстая</button>
+            <button type="button" class="chip" data-val="double">Двойная</button>
+        </div>
+
+        <label>Основной цвет (буквы и рамка)</label>
+        <div class="color-row" id="primaryColors">
+            <div class="color-dot active" data-val="#c9a14a" style="background:#c9a14a;"></div>
+            <div class="color-dot" data-val="#c0c0c0" style="background:#c0c0c0;"></div>
+            <div class="color-dot" data-val="#4a78c9" style="background:#4a78c9;"></div>
+            <div class="color-dot" data-val="#2f8f4e" style="background:#2f8f4e;"></div>
+            <div class="color-dot" data-val="#c26a2a" style="background:#c26a2a;"></div>
+            <div class="color-dot" data-val="#c23a3a" style="background:#c23a3a;"></div>
+        </div>
+
+        <label>Дополнительный цвет (фон)</label>
+        <div class="color-row" id="secondaryColors">
+            <div class="color-dot" data-val="#2f8f4e" style="background:#2f8f4e;"></div>
+            <div class="color-dot" data-val="#c26a2a" style="background:#c26a2a;"></div>
+            <div class="color-dot" data-val="#a52a2a" style="background:#a52a2a;"></div>
+            <div class="color-dot" data-val="#7a4aad" style="background:#7a4aad;"></div>
+            <div class="color-dot" data-val="#1c2a3a" style="background:#1c2a3a;"></div>
+            <div class="color-dot active" data-val="#000000" style="background:#000000;"></div>
+        </div>
+
+        <button class="red-button" onclick="startPromotion()">СТАРТ</button>
+        <button class="back-button" onclick="showScreen('cityScreen')">Назад</button>
+    </div>
+</section>
+
+<script>
+// ... existing script ...
+
+let cityX = 0, cityDragging = false, cityStartX = 0, cityStartPan = 0;
+let cityMinX = 0, cityMaxX = 0;
+let cityRafId = null, cityVX = 0, lastMoveTime = 0, lastPointerX = 0;
+let thumbDragging = false;
+
+function initCityPan() {
+    const viewport = document.getElementById("cityViewport");
+    const world = document.getElementById("cityWorld");
+    const img = world.querySelector("img");
+    const thumb = document.getElementById("scrollThumb");
+    const bar = document.getElementById("scrollBar");
+
+    function updateVisuals() {
+        world.style.transform = `translate3d(${cityX}px, 0, 0)`;
+        const vw = viewport.clientWidth;
+        const ww = world.clientWidth;
+        const barW = bar.clientWidth;
+        const thumbW = thumb.clientWidth;
+        const scrollable = ww - vw;
+        if (scrollable > 0) {
+            const percent = Math.abs(cityX) / scrollable;
+            thumb.style.transform = `translateX(${percent * (barW - thumbW)}px)`;
+        }
+    }
+
+    function setBounds() {
+        const vw = viewport.clientWidth;
+        const ww = world.clientWidth;
+        cityMinX = Math.min(0, vw - ww);
+        cityMaxX = 0;
+        cityX = Math.max(cityMinX, Math.min(cityMaxX, cityX));
+        updateVisuals();
+    }
+
+    if (!img.complete) img.onload = setBounds;
+    else setBounds();
+
+    // Перетаскивание пальцем по экрану
+    viewport.onpointerdown = (e) => {
+        if (thumbDragging || e.target === thumb || e.target === bar) return;
+        cityDragging = true;
+        cityStartX = e.clientX;
+        cityStartPan = cityX;
+        cityVX = 0;
+        lastMoveTime = performance.now();
+        lastPointerX = e.clientX;
+        viewport.setPointerCapture(e.pointerId);
+    };
+
+    viewport.onpointermove = (e) => {
+        if (!cityDragging) return;
+        const now = performance.now();
+        const dt = now - lastMoveTime;
+        const dx = e.clientX - lastPointerX;
+        if (dt > 0) cityVX = dx / dt;
+        lastMoveTime = now;
+        lastPointerX = e.clientX;
+
+        cityX = cityStartPan + (e.clientX - cityStartX);
+        cityX = Math.max(cityMinX, Math.min(cityMaxX, cityX));
+        if (!cityRafId) {
+            cityRafId = requestAnimationFrame(() => {
+                updateVisuals();
+                cityRafId = null;
+            });
+        }
+    };
+
+    viewport.onpointerup = (e) => {
+        if (!cityDragging) return;
+        cityDragging = false;
+        if (viewport.hasPointerCapture(e.pointerId)) viewport.releasePointerCapture(e.pointerId);
+        startInertia();
+    };
+
+    function startInertia() {
+        let v = cityVX * 16;
+        function frame() {
+            v *= 0.95;
+            cityX += v;
+            if (cityX < cityMinX || cityX > cityMaxX) {
+                cityX = Math.max(cityMinX, Math.min(cityMaxX, cityX));
+                v = 0;
+            }
+            updateVisuals();
+            if (Math.abs(v) > 0.1) requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+    }
+
+    // Перетаскивание ползунка
+    thumb.onpointerdown = (e) => {
+        e.stopPropagation();
+        thumbDragging = true;
+        thumb.setPointerCapture(e.pointerId);
+    };
+
+    thumb.onpointermove = (e) => {
+        if (!thumbDragging) return;
+        const rect = bar.getBoundingClientRect();
+        const barW = bar.clientWidth;
+        const thumbW = thumb.clientWidth;
+        let relX = e.clientX - rect.left - thumbW / 2;
+        relX = Math.max(0, Math.min(barW - thumbW, relX));
+        
+        const percent = relX / (barW - thumbW);
+        const vw = viewport.clientWidth;
+        const ww = world.clientWidth;
+        const scrollable = ww - vw;
+        
+        if (scrollable > 0) {
+            cityX = -percent * scrollable;
+            updateVisuals();
+        }
+    };
+
+    thumb.onpointerup = (e) => {
+        thumbDragging = false;
+        thumb.releasePointerCapture(e.pointerId);
+    };
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    // existing init logic ...
+    // initCityPan() вызывается в endIntro
+});
+</script>
+
+</body>
+  </html>

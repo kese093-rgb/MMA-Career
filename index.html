@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Твоя карьера промоушна</title>
+<script>
+window.onerror = function(msg, url, line, col) {
+  var d = document.createElement('div');
+  d.style.cssText = 'position:fixed;inset:0;background:#000;color:#ff4444;padding:20px;font-size:14px;z-index:99999;overflow:auto;white-space:pre-wrap;';
+  d.textContent = 'ОШИБКА:\n' + msg + '\n\nФайл: ' + url + '\nСтрока: ' + line + ':' + col;
+  document.body.appendChild(d);
+};
+</script>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #050505; color: white; font-family: Arial, sans-serif; }
+
+.screen {
+  display: none;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.75)), url("pngtree-vertical-geometric-trendy-composition-of-silver-lines-on-black-neutral-background-image_605703.jpg") center/cover no-repeat fixed;
+}
+.screen.active { display: block; }
+
+#loadingScreen { position: fixed; inset: 0; padding: 0; background: #000; display: none; align-items: center; justify-content: center; z-index: 10000; }
+#loadingScreen.active { display: flex; }
+#loadingImg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#loadingContinue { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); padding: 14px 32px; background: rgba(200,0,0,0.9); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 900; z-index: 10; display: none; cursor: pointer; }
+#loadingContinue.visible { display: block; }
+
+#introScreen { position: fixed; inset: 0; padding: 0; background: #000; display: none; align-items: center; justify-content: center; z-index: 9999; }
+#introScreen.active { display: flex; }
+#introVideo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
+#introSkip { position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); padding: 14px 32px; background: rgba(200,0,0,0.9); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 900; z-index: 10; display: none; cursor: pointer; }
+#introSkip.visible { display: block; }
+
+.main-title { padding-top: 70px; font-size: 40px; font-weight: 900; line-height: 1; text-align: center; }
+.main-title span { color: red; }
+.menu-buttons { margin-top: 50px; }
+.menu-card { position: relative; width: 90%; max-width: 400px; height: 180px; margin: 18px auto; border-radius: 12px; overflow: hidden; cursor: pointer; border: 2px solid #333; }
+.menu-card img { width: 100%; height: 100%; object-fit: cover; }
+.menu-card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent,rgba(0,0,0,.85)); }
+.menu-card-title { position: absolute; bottom: 14px; left: 16px; z-index: 2; font-size: 20px; font-weight: 900; }
+</style>
+</head>
+<body>
+
+<section id="loadingScreen" class="screen active">
+    <img id="loadingImg" src="IMG_20261015_131935_584.jpg" alt="Загрузка">
+    <button id="loadingContinue" onclick="startIntroWithSound()">ПРОДОЛЖИТЬ</button>
+</section>
+
+<section id="introScreen" class="screen">
+    <video id="introVideo" src="VID_20261015_124945_834.mp4" playsinline preload="auto"></video>
+    <button id="introSkip" onclick="skipIntro()">ПРОПУСТИТЬ</button>
+</section>
+
+<section id="mainMenu" class="screen">
+    <div class="main-title">ТВОЯ КАРЬЕРА<br><span>ПРОМОУШНА</span></div>
+    <div class="menu-buttons">
+        <div class="menu-card" onclick="continueLastGame()">
+            <img src="IMG_ef241dcf-ce29-46a5-98ef-9f6481b4704c.jpg" alt="Продолжить">
+            <div class="menu-card-title">ПРОДОЛЖИТЬ ПОСЛЕДНЮЮ ИГРУ</div>
+        </div>
+        <div class="menu-card" onclick="createPromotion()">
+            <img src="izuchaem-glavnye-mma-promousheny-planety_17306224402071660880.jpg" alt="Создать промоушн">
+            <div class="menu-card-title">СОЗДАТЬ ПРОМОУШН</div>
+        </div>
+    </div>
+</section>
+
+<script>
+let loadingTimers = [];
+
+const loadingFrames = [
+    { delay: 0,    src: "IMG_20261015_131935_584.jpg" },
+    { delay: 2000, src: "IMG_20261015_132354_203.jpg" },
+    { delay: 4000, src: "IMG_20261015_132531_811.jpg" },
+    { delay: 6000, src: "IMG_20261015_132752_440.jpg" }
+];
+
+function showScreen(id) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    const target = document.getElementById(id);
+    if (target) target.classList.add("active");
+}
+
+function startLoadingSequence() {
+    const img = document.getElementById("loadingImg");
+    const btn = document.getElementById("loadingContinue");
+    btn.classList.remove("visible");
+    loadingTimers.forEach(t => clearTimeout(t));
+    loadingTimers = [];
+
+    loadingFrames.forEach((frame, i) => {
+        if (i === 0) {
+            img.src = frame.src;
+            return;
+        }
+        const t = setTimeout(() => { img.src = frame.src; }, frame.delay);
+        loadingTimers.push(t);
+    });
+    const tEnd = setTimeout(() => { btn.classList.add("visible"); }, 6000);
+    loadingTimers.push(tEnd);
+}
+
+function startIntroWithSound() {
+    const btn = document.getElementById("loadingContinue");
+    btn.classList.remove("visible");
+    showScreen("introScreen");
+
+    const video = document.getElementById("introVideo");
+    const skip = document.getElementById("introSkip");
+    skip.classList.remove("visible");
+    video.currentTime = 0;
+    video.volume = 1.0;
+    video.muted = false;
+
+    const skipTimer = setTimeout(() => { skip.classList.add("visible"); }, 4000);
+
+    video.onended = () => {
+        clearTimeout(skipTimer);
+        endIntro();
+    };
+
+    const playPromise = video.play();
+    if (playPromise && playPromise.catch) {
+        playPromise.catch((e) => {
+            console.error("Video play failed:", e);
+            clearTimeout(skipTimer);
+            endIntro();
+        });
+    }
+}
+
+function skipIntro() {
+    const video = document.getElementById("introVideo");
+    try { video.pause(); } catch (e) {}
+    endIntro();
+}
+
+function endIntro() {
+    showScreen("mainMenu");
+}
+
+function continueLastGame() {
+    alert("Раздел в разработке");
+}
+
+function createPromotion() {
+    alert("Раздел в разработке");
+}
+
+document.addEventListener("DOMContentLoaded", () => { startLoadingSequence(); });
+</script>
+
+</body>
+</html>
